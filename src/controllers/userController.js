@@ -65,4 +65,36 @@ const userRegistration=async function(req,res){
     }
 }
 
+
+
+///<--------------------------------user registration end ------------------------------>
+
+//<------------------------------------login api start---------------------------------->
+
+      const login=async (req,res)=>{
+       try {
+
+        let userName=req.body.email
+        if(!userName) return res.status(400).send({status:false,msg:"please provide useName ?"})
+        let userPassword=req.body.password
+        if(!userPassword)return res.status(400).send({status:false,msg:"please provide password ?"})
+        //<------------------------------------checking userId & password ------------------>
+        if(userName && userPassword){
+            let checking=await userModel.find({email:userName,password:userPassword})
+            if(!checking)return res.status(404).send({status:false,msg:"userId & password not found"})
+
+            let token= jwt.sign(
+                {
+                    
+                }
+            ) 
+        }
+       } catch (error) {
+        
+       } 
+
+
+}
+
+
 module.exports.userRegistration=userRegistration
