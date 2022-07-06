@@ -10,8 +10,78 @@
 //   example of a query url: books?filtername=filtervalue&f2=fv2
 // - Return all books sorted by book name in Alphabatical order
 
-const bookModel = require("../models/bookModel");
+
+/*### POST /books
+- Create a book document from request body. Get userId in request body only.
+- Make sure the userId is a valid userId by checking the user exist in the users collection.
+- Return HTTP status 201 on a succesful book creation. Also return the book document. The response should be a JSON object like [this](#successful-response-structure) 
+- Create atleast 10 books for each user
+- Return HTTP status 400 for an invalid request with a response body like [this](#error-response-structure)
+*/
+
+
+
+const bookModel = require('../models/bookModel')
+
+
+let createBookDocument = async (req, res) => {
+    try {
+        let data = req.body
+
+        let {
+            title,
+            excerpt,
+            userId,
+            ISBN,
+            category,
+            subcategory,
+            reviews,
+            deletedAt,
+            isDeleted,
+            releasedAt
+        }
+            = data
+        if (Object.keys(data).length == 0) {
+            return res.status(400).send({ status: false, msg: "Please provide necessary Book Details" })
+        }
+
+
+        let validId = await userModel.findById(userId)
+        if (!validId) {
+            return res.status(400).send({ status: false, msg: 'userId is not Valid Id' })
+        }
+        let savedData = await bookModel.create(data)
+        return res.status(201).send({ status: true, data: savedData })
+
+    }
+    catch {
+        console.log(err)
+        return res.status(500).send({ status: false, msg: err.message })
+
+    }
+}
 
 const getBook = async (req, res)=>{
- const books = await bookModel.find({_id: })
-}
+    const detailFromQuery = req.query;
+    let filter = {
+        isDeleted: false
+    };
+    if(detailFromQuery.userId){
+        filter.userId = detailFromQuery.userId
+    }
+    if(detailFromQuery.category){
+        filter.category = detailFromQuery.category
+    }
+    if(detailFromQuery.subcategory){
+        filter.subcategory = detailFromQuery.subcategory
+    }
+
+    const books = await bookModel.find(filter).select({ISBN: 0, deletedAt: 0, isDeleted: 0});
+    if(books.length === 0){
+        res.status(400).send({status: false, msg: 'No book found'});
+        return
+    }
+    res.status(200).send({status: true, data: books});
+   }
+module.exports.createBookDocument = createBookDocument
+module.exports.getBook = getBook
