@@ -17,13 +17,18 @@
 - Create atleast 10 books for each user
 - Return HTTP status 400 for an invalid request with a response body like [this](#error-response-structure)
 */
+/*### POST /books
+- Create a book document from request body. Get userId in request body only.
+- Make sure the userId is a valid userId by checking the user exist in the users collection.
+- Return HTTP status 201 on a succesful book creation. Also return the book document. The response should be a JSON object like [this](#successful-response-structure) 
+- Create atleast 10 books for each user
+- Return HTTP status 400 for an invalid request with a response body like [this](#error-response-structure)
+*/
 const bookModel = require('../models/bookModel')
 const userModel = require('../models/userModel')
 const ObjectId = require('mongoose').Types.ObjectId
 const moment = require('moment')
 
-const bookModel = require("../models/bookModel");
-const userModel = require("../models/userModel");
 
 let createBookDocument = async (req, res) => {
     try {
@@ -114,23 +119,29 @@ let createBookDocument = async (req, res) => {
 
         let savedData = await bookModel.create(obj)
         return res.status(201).send({ status: true, data: savedData })
-      
+
+    }
+    catch(err) {
+        console.log(err)
+        return res.status(500).send({ status: false, msg: err.message })
+
+    }
+}
+
 const getBook = async (req, res) => {
   try {
     const detailFromQuery = req.query;
+    console.log(detailFromQuery)
+    console.log(typeof detailFromQuery.category)
     if (Object.keys(detailFromQuery).length === 0) {
       res.status(400).send({ status: false, msg: "Please Enter filter" });
       return;
     }
-     if(Object.keys(detailFromQuery).length !== Object.values(detailFromQuery).length){
-         res.status(400).send({status: false, msg: 'Please Enter filter'})
-         return
-     }
-    // if(!detailFromQuery.userId.trim()){
-    //     res.status(400).send({ status: false, msg: "Please Enter user id" });
-    //   return;
-    // }
-    // if(!detailFromQuery.category.trim()){
+    //  if(!detailFromQuery.userId.trim()){
+    //      res.status(400).send({ status: false, msg: "Please Enter user id" });
+    //    return;
+    //  }
+    // if(detailFromQuery.category.trim().length === 0){
     //     res.status(400).send({ status: false, msg: "Please Enter category" });
     //   return;
     // }
