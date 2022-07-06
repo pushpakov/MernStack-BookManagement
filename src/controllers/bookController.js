@@ -6,6 +6,7 @@
 - Return HTTP status 400 for an invalid request with a response body like [this](#error-response-structure)
 */
 const bookModel = require('../models/bookModel')
+const userModel = require('../models/userModel')
 
 
 let createBookDocument = async (req, res) => {
@@ -46,3 +47,4 @@ let createBookDocument = async (req, res) => {
 }
 
 module.exports.createBookDocument = createBookDocument
+
