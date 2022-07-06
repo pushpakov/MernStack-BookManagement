@@ -1,3 +1,15 @@
+// ### GET /books
+// - Returns all books in the collection that aren't deleted.
+//Return only book _id, title, excerpt, userId, category, releasedAt, reviews field. Response example [here](#get-books-response)
+// - Return the HTTP status 200 if any documents are found. The response structure should be like [this](#successful-response-structure)
+// - If no documents are found then return an HTTP status 404 with a response like [this](#error-response-structure)
+// - Filter books list by applying filters. Query param can have any combination of below filters.
+//   - By userId
+//   - By category
+//   - By subcategory
+//   example of a query url: books?filtername=filtervalue&f2=fv2
+// - Return all books sorted by book name in Alphabatical order
+
 /*### POST /books
 - Create a book document from request body. Get userId in request body only.
 - Make sure the userId is a valid userId by checking the user exist in the users collection.
@@ -5,6 +17,7 @@
 - Create atleast 10 books for each user
 - Return HTTP status 400 for an invalid request with a response body like [this](#error-response-structure)
 */
+
 const bookModel = require('../models/bookModel')
 const userModel = require('../models/userModel')
 const ObjectId = require('mongoose').Types.ObjectId
@@ -109,4 +122,56 @@ let createBookDocument = async (req, res) => {
     }
 }
 
-module.exports.createBookDocument = createBookDocument
+
+const getBook = async (req, res) => {
+  try {
+    const detailFromQuery = req.query;
+    console.log(detailFromQuery)
+    console.log(typeof detailFromQuery.category)
+    if (Object.keys(detailFromQuery).length === 0) {
+      res.status(400).send({ status: false, msg: "Please Enter filter" });
+      return;
+    }
+    //  if(!detailFromQuery.userId.trim()){
+    //      res.status(400).send({ status: false, msg: "Please Enter user id" });
+    //    return;
+    //  }
+    // if(detailFromQuery.category.trim().length === 0){
+    //     res.status(400).send({ status: false, msg: "Please Enter category" });
+    //   return;
+    // }
+    // if(!detailFromQuery.subcategory.trim()){
+    //     res.status(400).send({ status: false, msg: "Please Enter subcategory" });
+    //   return;
+    // }
+    let filter = {
+      isDeleted: false,
+    };
+    if (detailFromQuery.userId) {
+      filter.userId = detailFromQuery.userId.trim();
+    }
+    if (detailFromQuery.category) {
+      filter.category = detailFromQuery.category.trim();
+    }
+    if (detailFromQuery.subcategory) {
+      filter.subcategory = detailFromQuery.subcategory.trim();
+    }
+
+    const books = await bookModel
+      .find(filter)
+      .sort({ title: 1 })
+      .select({ ISBN: 0, subcategory: 0, deletedAt: 0, isDeleted: 0 });
+    if (books.length === 0) {
+      res.status(404).send({ status: false, msg: "No book found" });
+      return;
+    }
+    res.status(200).send({ status: true, message: "Success", data: books });
+    return;
+  } catch (err) {
+    res.status(500).send({ status: false, msg: err.message });
+    return;
+  }
+};
+
+module.exports.createBookDocument = createBookDocument;
+module.exports.getBook = getBook;
