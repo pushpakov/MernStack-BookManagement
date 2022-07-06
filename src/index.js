@@ -8,7 +8,7 @@ app.use(bodyParser.json());
 
 
 mongoose
-  .connect(
+.connect(
     "mongodb+srv://pushpak:pushpak1819@radoncluster.opqe2.mongodb.net/group1Database?retryWrites=true&w=majority",
     {
       useNewUrlParser: true,
