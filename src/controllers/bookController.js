@@ -62,26 +62,36 @@ let createBookDocument = async (req, res) => {
 }
 
 const getBook = async (req, res)=>{
-    const detailFromQuery = req.query;
-    let filter = {
-        isDeleted: false
-    };
-    if(detailFromQuery.userId){
-        filter.userId = detailFromQuery.userId
+    try{
+        const detailFromQuery = req.query;
+        if(Object.keys(detailFromQuery).length === 0){
+            res.status(400).send({status: false, msg: 'Please Enter filter'})
+        }
+        let filter = {
+            isDeleted: false
+        };
+        if(detailFromQuery.userId){
+            filter.userId = detailFromQuery.userId
+        }
+        if(detailFromQuery.category){
+            filter.category = detailFromQuery.category
+        }
+        if(detailFromQuery.subcategory){
+            filter.subcategory = detailFromQuery.subcategory
+        }
+    
+        const books = await bookModel.find(filter).select({ISBN: 0, deletedAt: 0, isDeleted: 0});
+        if(books.length === 0){
+            res.status(404).send({status: false, msg: 'No book found'});
+            return
+        }
+        res.status(200).send({status: true, data: books});
+       }
+       catch{
+        res.status(500).send({status: false, msg: err.message})
+       }
     }
-    if(detailFromQuery.category){
-        filter.category = detailFromQuery.category
-    }
-    if(detailFromQuery.subcategory){
-        filter.subcategory = detailFromQuery.subcategory
-    }
+    
 
-    const books = await bookModel.find(filter).select({ISBN: 0, deletedAt: 0, isDeleted: 0});
-    if(books.length === 0){
-        res.status(400).send({status: false, msg: 'No book found'});
-        return
-    }
-    res.status(200).send({status: true, data: books});
-   }
 module.exports.createBookDocument = createBookDocument
 module.exports.getBook = getBook
