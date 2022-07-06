@@ -65,4 +65,4 @@ const userRegistration=async function(req,res){
     }
 }
 
-module.exports.userRegistration=userRegistration
+module.exports.userRegistration = userRegistration
