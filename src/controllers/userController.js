@@ -65,9 +65,6 @@ const userRegistration=async function(req,res){
     }
 }
 
-module.exports.userRegistration=userRegistration
-
-
 const userLogin = async function(req, res){
     const { email, password} = req.body
     if(Object.keys(req.body).length == 0)
@@ -84,10 +81,12 @@ const userLogin = async function(req, res){
     let token = jwt.sign({
         userId: user._id,
         iat:  Math.floor(Date.now()/1000),
-        exp: Math.floor(Date.now() / 1000) + (60 * 30)
+        exp: Math.floor(Date.now() / 1000) + (30 * 60)
     }, "Room 1")
     return res.status(201).send({status:true, msg: "login Successfully", token : token})
 }
 
 
 module.exports.userLogin = userLogin
+module.exports.userRegistration = userRegistration
+
