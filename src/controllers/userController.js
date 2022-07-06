@@ -1,0 +1,68 @@
+const userModel=require("../models/userModel")
+
+
+
+
+const userRegistration=async function(req,res){
+    try {
+       let userData=req.body
+
+
+    ///<--------------req validation-------------------------------------------->
+    if(!userData)return res.status(400).send({status:false,msg:" data is empty"})
+///<----------------------------body tag checking ---------------------------------->
+     if(!userData.title)return res.status(400).send({status:false,msg:"title is required"})
+     if(!userData.name)return res.status(400).send({status:false,msg:"name is required"})
+     if(!userData.phone)return res.status(400).send({status:false,msg:"phone is required"})
+     if(!userData.email)return res.status(400).send({status:false,msg:"email is required"})
+     if(!userData.password)return res.status(400).send({status:false,msg:"password is required"})
+     if(!userData.address)return res.status(400).send({status:false,msg:"address is required"})
+     
+    ///<------------------------- req.body key empty validation ------------------------>
+    const isValid= function(value){
+        if(typeof value==="undefined" || value===null) return false
+        if(typeof value==="string" && value.trim().length===0) return false
+        return true;
+    }
+    if(!isValid(userData.title))return res.status(400).send({status:false,msg:"title is required"})
+    if(!isValid(userData.name))return res.status(400).send({status:false,msg:"name is required"})
+    if(!isValid(userData.phone))return res.status(400).send({status:false,msg:"phone is required"})
+    if(!isValid(userData.email))return res.status(400).send({status:false,msg:"email is required"})
+    if(!isValid(userData.password))return res.status(400).send({status:false,msg:"password is required"})
+    if(!isValid(userData.address))return res.status(400).send({status:false,msg:"address is required"})
+    
+    ///<------------------------ Email validation ---------------------------------------->
+
+    const validateEmail = function (mail) {
+        if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(mail)) {
+            return (true)
+        }
+    };
+    if(!validateEmail(userData.email))return res.status(400).send({status:false,msg:"this Email format is incorrect"})
+
+
+    const emailChecking=await userModel.findOne({email:userData.email})
+    if(emailChecking)return res.status(400).send({status:false,msg:"this Email is already exist ?"})
+
+    ///<-----------------------------mobile number checking ---------------------------->
+    let phoneNumChecking= await userModel.findOne({phone:userData.phone})
+    if(phoneNumChecking){return res.status(400).send({status:false,msg:"this phone number is already exist ?"})}
+    
+    ////<----------------------- title enum validation ------------------------------->
+    let enu=["Mr", "Mrs", "Miss"]
+    if(!enu.includes(userData.title))res.status(400).send({status:false,msg:`please provide one of them + ${enu}`})
+
+
+    ///<-----------------------------created part ---------------------------------->
+    const userCreated=await userModel.create(userData)
+    res.status(201).send({status:true,userdata:userCreated})
+
+
+        
+    } catch (error) {
+        res.status(500).send({status:false, msg:error.massenge})
+        
+    }
+}
+
+module.exports.userRegistration=userRegistration
