@@ -64,10 +64,10 @@ const getBook = async (req, res) => {
       res.status(400).send({ status: false, msg: "Please Enter filter" });
       return;
     }
-    // if(Object.keys(detailFromQuery).length !== Object.values(detailFromQuery).length){
-    //     res.status(400).send({status: false, msg: 'Please Enter filter'})
-    //     return
-    // }
+     if(Object.keys(detailFromQuery).length !== Object.values(detailFromQuery).length){
+         res.status(400).send({status: false, msg: 'Please Enter filter'})
+         return
+     }
     // if(!detailFromQuery.userId.trim()){
     //     res.status(400).send({ status: false, msg: "Please Enter user id" });
     //   return;
