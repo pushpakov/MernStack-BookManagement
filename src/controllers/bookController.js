@@ -11,11 +11,24 @@ const bookModel = require('../models/bookModel')
 let createBookDocument = async (req, res) => {
     try {
         let data = req.body
-        let{userId} = data
+
+        let {
+            title,
+            excerpt,
+            userId,
+            ISBN,
+            category,
+            subcategory,
+            reviews,
+            deletedAt,
+            isDeleted,
+            releasedAt
+        }
+            = data
         if (Object.keys(data).length == 0) {
             return res.status(400).send({ status: false, msg: "Please provide necessary Book Details" })
-          }
-      
+        }
+
 
         let validId = await userModel.findById(userId)
         if (!validId) {
