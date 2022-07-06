@@ -7,7 +7,6 @@ const {userRegistration,
 const {createBookDocument} = require('../controllers/bookController') 
 
 
-
 router.post("/register", userRegistration)
 router.post("/books", createBookDocument)
 router.post("/login", userLogin)
@@ -15,3 +14,4 @@ router.post("/login", userLogin)
 
 
 module.exports = router;
+
