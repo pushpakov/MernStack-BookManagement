@@ -111,7 +111,7 @@ let createBookDocument = async (req, res) => {
             return res.status(400).send({ status: false, msg: 'userId is not Valid Id' })
         }
 
-        let savedData = await bookModel.create(obj)
+        let savedData = await bookModel.create(data)
         return res.status(201).send({ status: true, data: savedData })
 
     }
@@ -128,10 +128,11 @@ const getBook = async (req, res) => {
     const detailFromQuery = req.query;
     console.log(detailFromQuery)
     console.log(typeof detailFromQuery.category)
-    if (Object.keys(detailFromQuery).length === 0) {
-      res.status(400).send({ status: false, msg: "Please Enter filter" });
-      return;
-    }
+    // if (Object.keys(detailFromQuery).length === 0) {
+    //   res.status(400).send({ status: false, msg: "Please Enter filter" });
+    //   return;
+    // }
+    let loggedIn = req.loggedIn
     //  if(!detailFromQuery.userId.trim()){
     //      res.status(400).send({ status: false, msg: "Please Enter user id" });
     //    return;
@@ -145,7 +146,7 @@ const getBook = async (req, res) => {
     //   return;
     // }
     let filter = {
-      isDeleted: false,
+      isDeleted: false, userId : loggedIn
     };
     if (detailFromQuery.userId) {
       filter.userId = detailFromQuery.userId.trim();
@@ -173,5 +174,17 @@ const getBook = async (req, res) => {
   }
 };
 
+const getBookById = async (req , res) => {
+  try{
+
+    let result = await bookModel.findOne({_id : req.params.bookId})
+    return res.status(201).send({status : true, data : result})
+  }catch(err){
+    res.status(500).send({ status: false, msg: err.message });
+    return;
+  }
+}
+
 module.exports.createBookDocument = createBookDocument;
 module.exports.getBook = getBook;
+module.exports.getBookById = getBookById;

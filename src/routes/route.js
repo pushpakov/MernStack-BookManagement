@@ -1,16 +1,24 @@
 const express = require("express");
 const router = express.Router();
+
 const {userRegistration,
        userLogin
 } = require('../controllers/userController')
 
-const {createBookDocument} = require('../controllers/bookController') 
+const {createBookDocument,
+       getBook,
+       getBookById
+} = require('../controllers/bookController') 
+
+const {Authenticate} = require('../middlewares/auth')
 
 //This Are the APIs//
 
-router.post("/register", userRegistration)
-router.post("/books", createBookDocument)
+router.post("/register",  userRegistration)
+router.post("/books", Authenticate, createBookDocument)
 router.post("/login", userLogin)
+router.get("/books",Authenticate, getBook)
+router.get("/books/:bookId",Authenticate, getBookById)
 
 
 module.exports = router;
