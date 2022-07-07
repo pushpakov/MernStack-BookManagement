@@ -111,7 +111,7 @@ let createBookDocument = async (req, res) => {
             return res.status(400).send({ status: false, msg: 'userId is not Valid Id' })
         }
 
-        let savedData = await bookModel.create(data)
+        let savedData = await bookModel.create(obj)
         return res.status(201).send({ status: true, data: savedData })
 
     }
@@ -174,16 +174,7 @@ const getBook = async (req, res) => {
   }
 };
 
-const getBookById = async (req , res) => {
-  try{
 
-    let result = await bookModel.findOne({_id : req.params.bookId})
-    return res.status(201).send({status : true, data : result})
-  }catch(err){
-    res.status(500).send({ status: false, msg: err.message });
-    return;
-  }
-}
 
 module.exports.createBookDocument = createBookDocument;
 module.exports.getBook = getBook;
