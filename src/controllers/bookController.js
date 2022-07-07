@@ -1,27 +1,9 @@
-// ### GET /books
-// - Returns all books in the collection that aren't deleted.
-//Return only book _id, title, excerpt, userId, category, releasedAt, reviews field. Response example [here](#get-books-response)
-// - Return the HTTP status 200 if any documents are found. The response structure should be like [this](#successful-response-structure)
-// - If no documents are found then return an HTTP status 404 with a response like [this](#error-response-structure)
-// - Filter books list by applying filters. Query param can have any combination of below filters.
-//   - By userId
-//   - By category
-//   - By subcategory
-//   example of a query url: books?filtername=filtervalue&f2=fv2
-// - Return all books sorted by book name in Alphabatical order
-
-/*### POST /books
-- Create a book document from request body. Get userId in request body only.
-- Make sure the userId is a valid userId by checking the user exist in the users collection.
-- Return HTTP status 201 on a succesful book creation. Also return the book document. The response should be a JSON object like [this](#successful-response-structure) 
-- Create atleast 10 books for each user
-- Return HTTP status 400 for an invalid request with a response body like [this](#error-response-structure)
-*/
+/*############################################ POST BOOKS ##########################################################*/
 
 const bookModel = require('../models/bookModel')
 const userModel = require('../models/userModel')
 const ObjectId = require('mongoose').Types.ObjectId
-const moment = require('moment')
+const isbn = require("isbn-validate")
 
 
 let createBookDocument = async (req, res) => {
@@ -35,12 +17,9 @@ let createBookDocument = async (req, res) => {
             ISBN,
             category,
             subcategory,
-            
-        }
-            = data
+            releasedAt
 
-        let releasedAt = moment().format('YYYY-MM-DD')
-        console.log(releasedAt)
+        } = data
         
         let obj = {}
 
@@ -53,7 +32,7 @@ let createBookDocument = async (req, res) => {
         obj.reviews = data.reviews
         obj.deletedAt = data.deletedAt  //Date.now():null
         obj.isDeleted = data.isDeleted
-        obj.releasedAt = releasedAt
+        obj.releasedAt = data.releasedAt
         
 
         
@@ -84,6 +63,10 @@ let createBookDocument = async (req, res) => {
         if (!ISBN) {
             return res.status(400).send({ status: false, msg: "ISBN is required" })
         }
+        
+        if (!isbn.Validate(ISBN)) {
+            return res.status(400).send({ status: false, msg: "ISBN is Invalid" })
+        }
 
         if (!subcategory) {
             return res.status(400).send({ status: false, msg: "Subcategory is required" })
@@ -93,7 +76,7 @@ let createBookDocument = async (req, res) => {
             return res.status(400).send({ status: false, msg: "releasedAt is required" })
         }
 
-        const titleExist = await bookModel.findOne({ title: obj.title })
+       const titleExist = await bookModel.findOne({ title: obj.title })
 
         if (titleExist) {
             return res.status(409).send({ status: false, msg: "Title already exits" })
@@ -123,15 +106,18 @@ let createBookDocument = async (req, res) => {
 }
 
 
+/*############################################ GET BOOK ##########################################################*/
+
 const getBook = async (req, res) => {
   try {
     const detailFromQuery = req.query;
     console.log(detailFromQuery)
     console.log(typeof detailFromQuery.category)
-    if (Object.keys(detailFromQuery).length === 0) {
-      res.status(400).send({ status: false, msg: "Please Enter filter" });
-      return;
-    }
+    // if (Object.keys(detailFromQuery).length === 0) {
+    //   res.status(400).send({ status: false, msg: "Please Enter filter" });
+    //   return;
+    // }
+    let loggedIn = req.loggedIn
     //  if(!detailFromQuery.userId.trim()){
     //      res.status(400).send({ status: false, msg: "Please Enter user id" });
     //    return;
@@ -145,7 +131,7 @@ const getBook = async (req, res) => {
     //   return;
     // }
     let filter = {
-      isDeleted: false,
+      isDeleted: false, userId : loggedIn
     };
     if (detailFromQuery.userId) {
       filter.userId = detailFromQuery.userId.trim();
@@ -175,42 +161,91 @@ const getBook = async (req, res) => {
 
 
 
+/*############################################ UPDATE BOOKS BY BOOK-ID ##########################################################*/
 
-///<--------------------------------------Delete/blogId api ------------------------------->
-// DELETE /books/:bookId
-// - Check if the bookId exists and is not deleted. If it does, mark it deleted and return an HTTP status 200 with a response body with status and message.
-// - If the book document doesn't exist then return an HTTP status of 404 with a body like 
-
-const deleteBlog=async(req,res)=>{
-try {
-  let bookId=req.params.bookId
-
-  if(bookId==undefined){return res.status(400).send({status:false,msg:"please provide bookId ?"})}
-
-  if(!ObjectId.isValid(bookId)){
-    return res.status(400).send({ status: false, msg: "book Id is Invalid" })
-}
-
-  let findId=await bookModel.findOne({_id:bookId})
-  if(!findId){return res.status(400).send({status:false,msg:"bookId is not found ?"})}
-  if(findId.isDeleted==true){return res.status(409).send({status:true,message:"IsDeleted is already delete"})}
-
-  if(findId.isDeleted==false){
-    let updateddata=await bookModel.updateOne({_id:bookId},{$set:{"isDeleted":true}})
-    res.status(200).send({status:true,message:"data is deleted"})
-  }
+const updateBook = async (req, res) => {
+    try {
+      let Id = req.params.bookId
   
-} catch (error) {
-  console.log(error)
-  res.status(500).send({status:false,msg:error})
+      if(!ObjectId.isValid(Id)){
+        return res.status(400).send({ status: false, msg: "Book Id is Invalid" })
+    }
+
+      let data = req.body
+      let { title, excerpt, releasedAt, ISBN} = data
   
-}
+      let book = await bookModel.findById(Id)
+      if (!book) {
+        return res.status(404).send({status: false, msg: `User with Id- ${Id} is not present in collection` })
+      }
+      if (book.isDeleted==true) {
+        return res.status(404).send({status: false, msg: 'Document already deleted' })
+      }
+
+      const titleExist = await bookModel.findOne({ title: title })
+
+        if (titleExist) {
+            return res.status(409).send({ status: false, msg: "Title already exits" })
+        }
+
+        const isbnExist = await bookModel.findOne({ ISBN: ISBN })
+
+        if (isbnExist) {
+            return res.status(409).send({ status: false, msg: "ISBN already exits" })
+        }
+
   
-}
+      let updatedBook = await bookModel.findOneAndUpdate(
+        { _id: Id, isDeleted: false },
+        {
+          title: title,
+          excerpt: excerpt,
+          releasedAt: releasedAt,
+          ISBN: ISBN,
+  
+        },
+        { returnDocument: 'after' },
+      )
+
+      return res.status(200).send({ status: true, message:'Success', data: updatedBook })
+    } catch (err) {
+      return res.status(500).send({ status: false, message: err.message })
+    }
+}  
+
+//------------------------------------delete api----------------------------------------
+
+       const deletedbook= async (req,res) =>{
+        try {
+
+          let bookId=req.params.bookId
+      
+          if(!bookId) {return res.status(400).send({status:false,message:"book id is empty"})}
+           if(!ObjectId.isValid(bookId)){return res.status(400).send({status:false,message:"bookid format invalid"})}
+          
+          let findid=await bookModel.findOne({_id:bookId,isDeleted:false})
+      
+          if(!findid){return res.status(400).send({status:false,message:"this bookid is not found"})}
+         
+           let deletedData=await bookModel.updateOne({_id:bookId},{$set:{isDeleted:true}})
+            res.status(200).send({status:true,massage:"Delete successful"})
+          
+
+          
+        } catch (error) {
+          res.status(500).send({status:false,message:error})
+          
+        }
+       }
+       
+    
 
 
 
 
 module.exports.createBookDocument = createBookDocument;
 module.exports.getBook = getBook;
-module.exports.deleteBlog = deleteBlog;
+module.exports.updateBook = updateBook;
+module.exports.deletedbook = deletedbook;
+
+

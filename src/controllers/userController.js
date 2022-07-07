@@ -3,20 +3,20 @@ const jwt = require('jsonwebtoken')
 
 
 
-const userRegistration=async function(req,res){
+const userRegistration = async (req,res)=>{
     try {
        let userData=req.body
 
 
     ///<--------------req validation-------------------------------------------->
-    // if(!userData)return res.status(400).send({status:false,msg:" data is empty"})
+    if(Object.keys(userData).length == 0) return res.status(400).send({status:false,msg:" data is empty"})
 ///<----------------------------body tag checking ---------------------------------->
-     if(!userData.title)return res.status(400).send({status:false,msg:"title is required"})
-     if(!userData.name)return res.status(400).send({status:false,msg:"name is required"})
-     if(!userData.phone)return res.status(400).send({status:false,msg:"phone is required"})
-     if(!userData.email)return res.status(400).send({status:false,msg:"email is required"})
-     if(!userData.password)return res.status(400).send({status:false,msg:"password is required"})
-     if(!userData.address)return res.status(400).send({status:false,msg:"address is required"})
+    //  if(!userData.title)return res.status(400).send({status:false,msg:"title is required"})
+    //  if(!userData.name)return res.status(400).send({status:false,msg:"name is required"})
+    //  if(!userData.phone)return res.status(400).send({status:false,msg:"phone is required"})
+    //  if(!userData.email)return res.status(400).send({status:false,msg:"email is required"})
+    //  if(!userData.password)return res.status(400).send({status:false,msg:"password is required"})
+    //  if(!userData.address)return res.status(400).send({status:false,msg:"address is required"})
      
     ///<------------------------- req.body key empty validation ------------------------>
     const isValid= function(value){
@@ -39,8 +39,6 @@ const userRegistration=async function(req,res){
         }
     };
     if(!validateEmail(userData.email))return res.status(400).send({status:false,msg:"this Email format is incorrect"})
-
-
     const emailChecking=await userModel.findOne({email:userData.email})
     if(emailChecking)return res.status(400).send({status:false,msg:"this Email is already exist ?"})
 
@@ -51,6 +49,15 @@ const userRegistration=async function(req,res){
     ////<----------------------- title enum validation ------------------------------->
     let enu=["Mr", "Mrs", "Miss"]
     if(!enu.includes(userData.title))res.status(400).send({status:false,msg:`please provide one of them + ${enu}`})
+
+    ////<----------------------- Password validation ------------------------------->
+    const validatePassword = function (password) {
+        if (/^[A-Za-z\W0-9]{8,15}$/.test(password)) {
+            return (true)
+        }
+    };
+    if(!validatePassword(password))return res.status(400).send({status:false,msg:"this password format is incorrect"})
+
 
 
     ///<-----------------------------created part ---------------------------------->
@@ -65,13 +72,30 @@ const userRegistration=async function(req,res){
     }
 }
 
-const userLogin = async function(req, res){
+
+const userLogin = async (req, res) =>{
+    
     const { email, password} = req.body
     if(Object.keys(req.body).length == 0)
        res.status(400).send({status:false, message: "Enter Login Credentials."})
     if(!email) res.status(400).send({status:false, msg: "Enter email."})
     if(!password) res.status(400).send({status:false, msg: "Enter password."})
-    let user = await userModel.find({email: email, password: password}).select({_id:1})
+
+    const validateEmail = function (mail) {
+        if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(mail)) {
+            return (true)
+        }
+    };
+    if(!validateEmail(email))return res.status(400).send({status:false,msg:"this Email format is incorrect"})
+
+    const validatePassword = function (password) {
+        if (/^[A-Za-z\W0-9]{8,15}$/.test(password)) {
+            return (true)
+        }
+    };
+    if(!validatePassword(password))return res.status(400).send({status:false,msg:"this password format is incorrect"})
+
+    let user = await userModel.findOne({email: email, password: password}).select({_id:1})
     if(!user)  return res.status(400).send({
         status: false,
         msg: "Email or the password is not corerct",

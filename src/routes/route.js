@@ -1,17 +1,27 @@
 const express = require("express");
 const router = express.Router();
+
 const {userRegistration,
        userLogin
 } = require('../controllers/userController')
 
-const {createBookDocument,deleteBlog} = require('../controllers/bookController') 
+const {createBookDocument,
+       getBook,
+       updateBook,deletedbook
+       
+} = require('../controllers/bookController') 
+
+const {Authenticate} = require('../middlewares/auth')
 
 //This Are the APIs//
 
-router.post("/register", userRegistration)
-router.post("/books", createBookDocument)
+router.post("/register",  userRegistration)
+router.post("/books",  createBookDocument)
 router.post("/login", userLogin)
-router.delete("/books/:bookId",deleteBlog)
+router.put("/books/:bookId", Authenticate, updateBook)
+router.get("/books",Authenticate, getBook)
+router.delete("/books/:bookId",deletedbook)
+//router.get("/books/:bookId", Authenticate, getBookById)
 
 
 module.exports = router;
