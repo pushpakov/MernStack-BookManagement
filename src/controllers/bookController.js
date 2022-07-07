@@ -3,7 +3,6 @@
 const bookModel = require('../models/bookModel')
 const userModel = require('../models/userModel')
 const ObjectId = require('mongoose').Types.ObjectId
-const moment = require('moment')
 const isbn = require("isbn-validate")
 
 
@@ -19,11 +18,8 @@ let createBookDocument = async (req, res) => {
             category,
             subcategory,
             releasedAt
-            
-        }
-            = data
-        
-        //releasedAt = moment().format('YYYY-MM-DD')
+
+        } = data
         
         let obj = {}
 
@@ -117,10 +113,11 @@ const getBook = async (req, res) => {
     const detailFromQuery = req.query;
     console.log(detailFromQuery)
     console.log(typeof detailFromQuery.category)
-    if (Object.keys(detailFromQuery).length === 0) {
-      res.status(400).send({ status: false, msg: "Please Enter filter" });
-      return;
-    }
+    // if (Object.keys(detailFromQuery).length === 0) {
+    //   res.status(400).send({ status: false, msg: "Please Enter filter" });
+    //   return;
+    // }
+    let loggedIn = req.loggedIn
     //  if(!detailFromQuery.userId.trim()){
     //      res.status(400).send({ status: false, msg: "Please Enter user id" });
     //    return;
@@ -134,7 +131,7 @@ const getBook = async (req, res) => {
     //   return;
     // }
     let filter = {
-      isDeleted: false,
+      isDeleted: false, userId : loggedIn
     };
     if (detailFromQuery.userId) {
       filter.userId = detailFromQuery.userId.trim();
