@@ -51,7 +51,7 @@ let createBookDocument = async (req, res) => {
         obj.userId = data.userId
         obj.ISBN = data.ISBN.trim().split(" ").filter(word=>word).join("")
         obj.reviews = data.reviews
-        obj.deletedAt = data.deletedAt ? //Date.now():null
+        obj.deletedAt = data.deletedAt  //Date.now():null
         obj.isDeleted = data.isDeleted
         obj.releasedAt = releasedAt
         
@@ -193,10 +193,11 @@ try {
 
   let findId=await bookModel.findOne({_id:bookId})
   if(!findId){return res.status(400).send({status:false,msg:"bookId is not found ?"})}
+  if(findId.isDeleted==true){return res.status(409).send({status:true,message:"IsDeleted is already delete"})}
 
   if(findId.isDeleted==false){
     let updateddata=await bookModel.updateOne({_id:bookId},{$set:{"isDeleted":true}})
-    res.status(200).send({status:true,updated:updateddata})
+    res.status(200).send({status:true,message:"data is deleted"})
   }
   
 } catch (error) {
@@ -212,3 +213,4 @@ try {
 
 module.exports.createBookDocument = createBookDocument;
 module.exports.getBook = getBook;
+module.exports.deleteBlog = deleteBlog;
