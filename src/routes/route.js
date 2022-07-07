@@ -7,7 +7,8 @@ const {userRegistration,
 
 const {createBookDocument,
        getBook,
-       getBookById
+       updateBook,
+       
 } = require('../controllers/bookController') 
 
 const {Authenticate} = require('../middlewares/auth')
@@ -17,8 +18,9 @@ const {Authenticate} = require('../middlewares/auth')
 router.post("/register",  userRegistration)
 router.post("/books", Authenticate, createBookDocument)
 router.post("/login", userLogin)
+router.put("/books/:bookId", Authenticate, updateBook)
 router.get("/books",Authenticate, getBook)
-router.get("/books/:bookId",Authenticate, getBookById)
+//router.get("/books/:bookId", Authenticate, getBookById)
 
 
 module.exports = router;
