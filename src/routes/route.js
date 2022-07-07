@@ -20,7 +20,7 @@ const {Authenticate,
 router.post("/register",  userRegistration)
 router.post("/books", Authenticate, createBookDocument)
 router.post("/login", userLogin)
-router.put("/books/:bookId", Authenticate, updateBook)
+router.put("/books/:bookId",  updateBook)
 router.get("/books",Authenticate, getBook)
 //router.get("/books/:bookId", Authenticate, getBookById)
 

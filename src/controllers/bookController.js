@@ -28,7 +28,7 @@ let createBookDocument = async (req, res) => {
         obj.category = data.category.trim().split(" ").filter(word=>word).join(" ")
         obj.subcategory = data.subcategory
         obj.userId = data.userId
-        obj.ISBN = data.ISBN.trim().split(" ").filter(word=>word).join("")
+        obj.ISBN = data.ISBN.trim().split("-").filter(word=>word).join("")
         obj.reviews = data.reviews
         obj.deletedAt = data.deletedAt ? Date.now():null
         obj.isDeleted = data.isDeleted
@@ -173,7 +173,21 @@ const updateBook = async (req, res) => {
 
       let data = req.body
       let { title, excerpt, releasedAt, ISBN} = data
-  
+
+      let obj = {}
+        if (data.title){
+            obj.title = data.title.trim().split(" ").filter(word=>word).join(" ")
+        }
+        if (data.excerpt){
+            obj.excerpt = data.excerpt.trim().split(" ").filter(word=>word).join(" ")
+        }
+        if (data.ISBN){
+            obj.ISBN = data.ISBN.trim().split("-").filter(word=>word).join("")
+        }
+        if (data.releasedAt){
+            obj.releasedAt = data.releasedAt
+        }
+      
       let book = await bookModel.findById(Id)
       if (!book) {
         return res.status(404).send({status: false, msg: `User with Id- ${Id} is not present in collection` })
@@ -194,24 +208,18 @@ const updateBook = async (req, res) => {
             return res.status(409).send({ status: false, msg: "ISBN already exits" })
         }
 
-  
+                
       let updatedBook = await bookModel.findOneAndUpdate(
-        { _id: Id, isDeleted: false },
-        {
-          title: title,
-          excerpt: excerpt,
-          releasedAt: releasedAt,
-          ISBN: ISBN,
-  
-        },
+        { _id: Id, isDeleted: false }, obj,
         { returnDocument: 'after' },
       )
 
       return res.status(200).send({ status: true, message:'Success', data: updatedBook })
-    } catch (err) {
+    } 
+    catch(err) {
       return res.status(500).send({ status: false, message: err.message })
     }
-}  
+ }  
 
 
 
