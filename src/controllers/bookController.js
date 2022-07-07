@@ -17,13 +17,7 @@
 - Create atleast 10 books for each user
 - Return HTTP status 400 for an invalid request with a response body like [this](#error-response-structure)
 */
-/*### POST /books
-- Create a book document from request body. Get userId in request body only.
-- Make sure the userId is a valid userId by checking the user exist in the users collection.
-- Return HTTP status 201 on a succesful book creation. Also return the book document. The response should be a JSON object like [this](#successful-response-structure) 
-- Create atleast 10 books for each user
-- Return HTTP status 400 for an invalid request with a response body like [this](#error-response-structure)
-*/
+
 const bookModel = require('../models/bookModel')
 const userModel = require('../models/userModel')
 const ObjectId = require('mongoose').Types.ObjectId
@@ -72,7 +66,7 @@ let createBookDocument = async (req, res) => {
         }
 
         if (!excerpt) {
-            return res.status(400).send({ status: false, msg: "Excerts is required" })
+            return res.status(400).send({ status: false, msg: "Excerpt is required" })
         }
 
         if (!userId) {
@@ -128,6 +122,7 @@ let createBookDocument = async (req, res) => {
     }
 }
 
+
 const getBook = async (req, res) => {
   try {
     const detailFromQuery = req.query;
@@ -153,7 +148,7 @@ const getBook = async (req, res) => {
       isDeleted: false,
     };
     if (detailFromQuery.userId) {
-      filter.userId = detailFromQuery.userId.trim();
+      filter._id = detailFromQuery.userId.trim();
     }
     if (detailFromQuery.category) {
       filter.category = detailFromQuery.category.trim();
@@ -178,5 +173,28 @@ const getBook = async (req, res) => {
   }
 };
 
+const getBookById = async (req,res)=>{
+  const bookId = req.params.bookId;
+  console.log(typeof bookId)
+  if(bookId.length===0){ // empty string is falsy
+    return res.status(400).send({status: false, msg: 'Please give bookId'})
+  }
+  if(bookId.trim().length>24){
+    return res.status(400).send({status: false, msg: 'Please give valid bookId'})
+  }
+    const filteredBookId = bookId.trim()
+    const book = await bookModel.findById({_id:filteredBookId});
+    if(!book){
+      return res.status(404).send({status: false, message: 'Book not found'})
+    }
+   // console.log(book)
+    if(book.reviews === 0){
+      book._doc.reviewsData = []
+    }
+    return res.status(200).send({status: true, message: "Success", data: book})
+  
+  }
+  
 module.exports.createBookDocument = createBookDocument;
 module.exports.getBook = getBook;
+module.exports.getBookById = getBookById;
