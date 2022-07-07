@@ -1,27 +1,10 @@
-// ### GET /books
-// - Returns all books in the collection that aren't deleted.
-//Return only book _id, title, excerpt, userId, category, releasedAt, reviews field. Response example [here](#get-books-response)
-// - Return the HTTP status 200 if any documents are found. The response structure should be like [this](#successful-response-structure)
-// - If no documents are found then return an HTTP status 404 with a response like [this](#error-response-structure)
-// - Filter books list by applying filters. Query param can have any combination of below filters.
-//   - By userId
-//   - By category
-//   - By subcategory
-//   example of a query url: books?filtername=filtervalue&f2=fv2
-// - Return all books sorted by book name in Alphabatical order
-
-/*### POST /books
-- Create a book document from request body. Get userId in request body only.
-- Make sure the userId is a valid userId by checking the user exist in the users collection.
-- Return HTTP status 201 on a succesful book creation. Also return the book document. The response should be a JSON object like [this](#successful-response-structure) 
-- Create atleast 10 books for each user
-- Return HTTP status 400 for an invalid request with a response body like [this](#error-response-structure)
-*/
+/*############################################ POST BOOKS ##########################################################*/
 
 const bookModel = require('../models/bookModel')
 const userModel = require('../models/userModel')
 const ObjectId = require('mongoose').Types.ObjectId
 const moment = require('moment')
+const isbn = require("isbn-validate")
 
 
 let createBookDocument = async (req, res) => {
@@ -35,12 +18,12 @@ let createBookDocument = async (req, res) => {
             ISBN,
             category,
             subcategory,
+            releasedAt
             
         }
             = data
-
-        let releasedAt = moment().format('YYYY-MM-DD')
-        console.log(releasedAt)
+        
+        //releasedAt = moment().format('YYYY-MM-DD')
         
         let obj = {}
 
@@ -53,7 +36,7 @@ let createBookDocument = async (req, res) => {
         obj.reviews = data.reviews
         obj.deletedAt = data.deletedAt ? Date.now():null
         obj.isDeleted = data.isDeleted
-        obj.releasedAt = releasedAt
+        obj.releasedAt = data.releasedAt
         
 
         
@@ -84,6 +67,10 @@ let createBookDocument = async (req, res) => {
         if (!ISBN) {
             return res.status(400).send({ status: false, msg: "ISBN is required" })
         }
+        
+        if (!isbn.Validate(ISBN)) {
+            return res.status(400).send({ status: false, msg: "ISBN is Invalid" })
+        }
 
         if (!subcategory) {
             return res.status(400).send({ status: false, msg: "Subcategory is required" })
@@ -93,7 +80,7 @@ let createBookDocument = async (req, res) => {
             return res.status(400).send({ status: false, msg: "releasedAt is required" })
         }
 
-        const titleExist = await bookModel.findOne({ title: obj.title })
+       const titleExist = await bookModel.findOne({ title: obj.title })
 
         if (titleExist) {
             return res.status(409).send({ status: false, msg: "Title already exits" })
@@ -122,6 +109,8 @@ let createBookDocument = async (req, res) => {
     }
 }
 
+
+/*############################################ GET BOOK ##########################################################*/
 
 const getBook = async (req, res) => {
   try {
@@ -173,5 +162,63 @@ const getBook = async (req, res) => {
   }
 };
 
+
+
+/*############################################ UPDATE BOOKS BY BOOK-ID ##########################################################*/
+
+const updateBook = async (req, res) => {
+    try {
+      let Id = req.params.bookId
+  
+      if(!ObjectId.isValid(Id)){
+        return res.status(400).send({ status: false, msg: "Book Id is Invalid" })
+    }
+
+      let data = req.body
+      let { title, excerpt, releasedAt, ISBN} = data
+  
+      let book = await bookModel.findById(Id)
+      if (!book) {
+        return res.status(404).send({status: false, msg: `User with Id- ${Id} is not present in collection` })
+      }
+      if (book.isDeleted==true) {
+        return res.status(404).send({status: false, msg: 'Document already deleted' })
+      }
+
+      const titleExist = await bookModel.findOne({ title: title })
+
+        if (titleExist) {
+            return res.status(409).send({ status: false, msg: "Title already exits" })
+        }
+
+        const isbnExist = await bookModel.findOne({ ISBN: ISBN })
+
+        if (isbnExist) {
+            return res.status(409).send({ status: false, msg: "ISBN already exits" })
+        }
+
+  
+      let updatedBook = await bookModel.findOneAndUpdate(
+        { _id: Id, isDeleted: false },
+        {
+          title: title,
+          excerpt: excerpt,
+          releasedAt: releasedAt,
+          ISBN: ISBN,
+  
+        },
+        { returnDocument: 'after' },
+      )
+
+      return res.status(200).send({ status: true, message:'Success', data: updatedBook })
+    } catch (err) {
+      return res.status(500).send({ status: false, message: err.message })
+    }
+}  
+
+
+
+
 module.exports.createBookDocument = createBookDocument;
 module.exports.getBook = getBook;
+module.exports.updateBook = updateBook;
