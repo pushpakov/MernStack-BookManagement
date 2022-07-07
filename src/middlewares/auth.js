@@ -1,39 +1,53 @@
-const e = require('express')
 const jwt = require('jsonwebtoken')
 const bookModel = require('../models/bookModel')
 
 let decodedToken
 
-const Authenticate = async (req, res, next) => {
+const Authentication = async (req, res, next) => {
     try {
         let token = req.headers["x-api-key" || "X-Api-Key"]
         if (!token) return res.status(401).send({ status: false, msg: "No Token Found !!!" })
 
         decodedToken = jwt.verify(token, "Room 1")
         if (!decodedToken) {
-            return res.status(401).send({ status: false, message: "Invalid Authentication !!!" })
+            return res.status(401).send({ status: false, message: "Token is invalid !!!" })
         }
-        return next()
+         next()
 
     } catch (err) {
-        return res.status(500).send({ status: false, msg: err.message })
+        return res.status(500).send({ status: false, message: err.message })
     }
 }
 
-const Authorisation = async (res, req, next) => {
+const Authorisation = async (req,res,next) => {
     try {
         let token = req.headers["x-api-key" || "X-Api-Key"]
-        if (req.body.userId) {
-            //Request Body
-            if (decodedToken.userId != req.body.userId)
-                return res.status(401).send({ status: false, msg: "Unauthorised!!!" });
-        } else if (req.params.bookId) {
-            //Path Parameter
-            let requiredId = await bookModel.findOne({ _id: req.params.bookId }).select({ userId: 1, _id: 0 })
-            let userIdFromBook = requiredId.userId.toString()
-            if (decodedToken.userId != userIdFromBook)
-                return res.status(401).send({ status: false, msg: "Unauthorised!!!" });
+        decodedToken = jwt.verify(token, "Room 1")
+        let userId = req.body.userId;
+        let bookId = req.params.bookId;
+        let userIdFromBook;
+        if(bookId){
+            let user = await bookModel.findOne({ _id: req.params.bookId }).select({ userId: 1, _id: 0 })
+            if(!user){
+                return res.status(404).send({status: false, message: 'No Book found'})
+            }
+             userIdFromBook = user.userId.toString()
+        }else{
+            userIdFromBook = userId
         }
+        if(decodedToken.userId !== userIdFromBook){
+            return res.status(401).send({ status: false, msg: "Unauthorised!!!" });
+        }
+        // if (userId) {
+        //     //Request Body
+        //     if (decodedToken.userId !== userId)
+        //         return res.status(401).send({ status: false, msg: "Unauthorised!!!" });
+        // } else if (req.params.bookId) {
+        //     //Path Parameter
+            
+        //     if (decodedToken.userId != userIdFromBook)
+        //         return res.status(401).send({ status: false, msg: "Unauthorised!!!" });
+        // }
 
         next()
     } catch (err) {
@@ -42,5 +56,5 @@ const Authorisation = async (res, req, next) => {
 }
 
 
-module.exports.Authenticate = Authenticate
+module.exports.Authentication = Authentication
 module.exports.Authorisation = Authorisation
