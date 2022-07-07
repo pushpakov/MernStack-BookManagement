@@ -30,7 +30,7 @@ let createBookDocument = async (req, res) => {
         obj.userId = data.userId
         obj.ISBN = data.ISBN.trim().split(" ").filter(word=>word).join("")
         obj.reviews = data.reviews
-        obj.deletedAt = data.deletedAt ? Date.now():null
+        obj.deletedAt = data.deletedAt  //Date.now():null
         obj.isDeleted = data.isDeleted
         obj.releasedAt = data.releasedAt
         
@@ -216,7 +216,6 @@ const updateBook = async (req, res) => {
             return res.status(409).send({ status: false, msg: "ISBN already exits" })
         }
 
-  
       let updatedBook = await bookModel.findOneAndUpdate(
         { _id: Id, isDeleted: false },
         {
@@ -235,6 +234,33 @@ const updateBook = async (req, res) => {
     }
 }  
 
+//------------------------------------delete api----------------------------------------
+
+       const deletedbook= async (req,res) =>{
+        try {
+
+          let bookId=req.params.bookId
+      
+          if(!bookId) {return res.status(400).send({status:false,message:"book id is empty"})}
+           if(!ObjectId.isValid(bookId)){return res.status(400).send({status:false,message:"bookid format invalid"})}
+          
+          let findid=await bookModel.findOne({_id:bookId,isDeleted:false})
+      
+          if(!findid){return res.status(400).send({status:false,message:"this bookid is not found"})}
+         
+           let deletedData=await bookModel.updateOne({_id:bookId},{$set:{isDeleted:true}})
+            res.status(200).send({status:true,massage:"Delete successful"})
+          
+
+          
+        } catch (error) {
+          res.status(500).send({status:false,message:error})
+          
+        }
+       }
+       
+    
+
 
 
 
@@ -242,3 +268,6 @@ module.exports.createBookDocument = createBookDocument;
 module.exports.getBook = getBook;
 module.exports.getBookById = getBookById;
 module.exports.updateBook = updateBook;
+module.exports.deletedbook = deletedbook;
+
+
