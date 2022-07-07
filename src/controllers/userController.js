@@ -1,5 +1,5 @@
 const userModel=require("../models/userModel")
-
+const jwt = require('jsonwebtoken')
 
 
 
@@ -9,7 +9,7 @@ const userRegistration=async function(req,res){
 
 
     ///<--------------req validation-------------------------------------------->
-    if(!userData)return res.status(400).send({status:false,msg:" data is empty"})
+    // if(!userData)return res.status(400).send({status:false,msg:" data is empty"})
 ///<----------------------------body tag checking ---------------------------------->
      if(!userData.title)return res.status(400).send({status:false,msg:"title is required"})
      if(!userData.name)return res.status(400).send({status:false,msg:"name is required"})
@@ -65,36 +65,28 @@ const userRegistration=async function(req,res){
     }
 }
 
-
-
-///<--------------------------------user registration end ------------------------------>
-
-//<------------------------------------login api start---------------------------------->
-
-      const login=async (req,res)=>{
-       try {
-
-        let userName=req.body.email
-        if(!userName) return res.status(400).send({status:false,msg:"please provide useName ?"})
-        let userPassword=req.body.password
-        if(!userPassword)return res.status(400).send({status:false,msg:"please provide password ?"})
-        //<------------------------------------checking userId & password ------------------>
-        if(userName && userPassword){
-            let checking=await userModel.find({email:userName,password:userPassword})
-            if(!checking)return res.status(404).send({status:false,msg:"userId & password not found"})
-
-            let token= jwt.sign(
-                {
-                    
-                }
-            ) 
-        }
-       } catch (error) {
-        
-       } 
-
-
+const userLogin = async function(req, res){
+    const { email, password} = req.body
+    if(Object.keys(req.body).length == 0)
+       res.status(400).send({status:false, message: "Enter Login Credentials."})
+    if(!email) res.status(400).send({status:false, msg: "Enter email."})
+    if(!password) res.status(400).send({status:false, msg: "Enter password."})
+    let user = await userModel.find({email: email, password: password}).select({_id:1})
+    if(!user)  return res.status(400).send({
+        status: false,
+        msg: "Email or the password is not corerct",
+      });
+    
+    console.log(user)
+    let token = jwt.sign({
+        userId: user._id,
+        iat:  Math.floor(Date.now()/1000),
+        exp: Math.floor(Date.now() / 1000) + (30 * 60)
+    }, "Room 1")
+    return res.status(201).send({status:true, msg: "login Successfully", token : token})
 }
 
 
-module.exports.userRegistration=userRegistration
+module.exports.userLogin = userLogin
+module.exports.userRegistration = userRegistration
+
