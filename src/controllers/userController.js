@@ -125,7 +125,7 @@ const userLogin = async (req, res) => {
   if (!user)
     return res.status(400).send({
       status: false,
-      msg: "Email or the password is not corerct",
+      msg: "Email or the password is not correct",
     });
 
   console.log(user);

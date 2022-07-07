@@ -9,16 +9,19 @@ const {createBookDocument,
        getBook,getBookById,
        updateBook} = require('../controllers/bookController') 
 
-const {Authenticate} = require('../middlewares/auth')
+const {Authentication,
+       Authorisation
+} = require('../middlewares/auth')
 
 //This Are the APIs//
 
 router.post("/register",  userRegistration)
-router.post("/books", Authenticate, createBookDocument)
 router.post("/login", userLogin)
-router.put("/books/:bookId", Authenticate, updateBook)
-router.get("/books",Authenticate, getBook)
-router.get("/books/:bookId", Authenticate, getBookById)
+router.post("/books", Authentication,Authorisation, createBookDocument)
+router.get("/books",Authentication, getBook)
+router.get("/books/:bookId", Authentication, getBookById)
+router.put("/books/:bookId", Authentication,Authorisation, updateBook)
+
 
 
 module.exports = router;
