@@ -20,22 +20,22 @@ let createBookDocument = async (req, res) => {
             releasedAt
 
         } = data
-        
+
         let obj = {}
 
-        obj.title = data.title.trim().split(" ").filter(word=>word).join(" ")
-        obj.excerpt = data.excerpt.trim().split(" ").filter(word=>word).join(" ")
-        obj.category = data.category.trim().split(" ").filter(word=>word).join(" ")
+        obj.title = data.title.trim().split(" ").filter(word => word).join(" ")
+        obj.excerpt = data.excerpt.trim().split(" ").filter(word => word).join(" ")
+        obj.category = data.category.trim().split(" ").filter(word => word).join(" ")
         obj.subcategory = data.subcategory
         obj.userId = data.userId
-        obj.ISBN = data.ISBN.trim().split(" ").filter(word=>word).join("")
+        obj.ISBN = data.ISBN.trim().split("-").filter(word => word).join("")
         obj.reviews = data.reviews
         obj.deletedAt = data.deletedAt  //Date.now():null
         obj.isDeleted = data.isDeleted
         obj.releasedAt = data.releasedAt
-        
 
-        
+
+
         if (Object.keys(data).length == 0) {
             return res.status(400).send({ status: false, msg: "Please provide necessary Book Details" })
         }
@@ -52,7 +52,7 @@ let createBookDocument = async (req, res) => {
             return res.status(400).send({ status: false, msg: "User Id is required" })
         }
 
-        if(!ObjectId.isValid(userId)){
+        if (!ObjectId.isValid(userId)) {
             return res.status(400).send({ status: false, msg: "User Id is Invalid" })
         }
 
@@ -63,7 +63,7 @@ let createBookDocument = async (req, res) => {
         if (!ISBN) {
             return res.status(400).send({ status: false, msg: "ISBN is required" })
         }
-        
+
         if (!isbn.Validate(ISBN)) {
             return res.status(400).send({ status: false, msg: "ISBN is Invalid" })
         }
@@ -76,7 +76,7 @@ let createBookDocument = async (req, res) => {
             return res.status(400).send({ status: false, msg: "releasedAt is required" })
         }
 
-       const titleExist = await bookModel.findOne({ title: obj.title })
+        const titleExist = await bookModel.findOne({ title: obj.title })
 
         if (titleExist) {
             return res.status(409).send({ status: false, msg: "Title already exits" })
@@ -98,7 +98,7 @@ let createBookDocument = async (req, res) => {
         return res.status(201).send({ status: true, data: savedData })
 
     }
-    catch(err) {
+    catch (err) {
         console.log(err)
         return res.status(500).send({ status: false, msg: err.message })
 
@@ -109,102 +109,116 @@ let createBookDocument = async (req, res) => {
 /*############################################ GET BOOK ##########################################################*/
 
 const getBook = async (req, res) => {
-  try {
-    const detailFromQuery = req.query;
-    console.log(detailFromQuery)
-    console.log(typeof detailFromQuery.category)
-    // if (Object.keys(detailFromQuery).length === 0) {
-    //   res.status(400).send({ status: false, msg: "Please Enter filter" });
-    //   return;
-    // }
-    let loggedIn = req.loggedIn
-    //  if(!detailFromQuery.userId.trim()){
-    //      res.status(400).send({ status: false, msg: "Please Enter user id" });
-    //    return;
-    //  }
-    // if(detailFromQuery.category.trim().length === 0){
-    //     res.status(400).send({ status: false, msg: "Please Enter category" });
-    //   return;
-    // }
-    // if(!detailFromQuery.subcategory.trim()){
-    //     res.status(400).send({ status: false, msg: "Please Enter subcategory" });
-    //   return;
-    // }
-    let filter = {
-      isDeleted: false, userId : loggedIn
-    };
-    if (detailFromQuery.userId) {
-      filter._id = detailFromQuery.userId.trim();
-    }
-    if (detailFromQuery.category) {
-      filter.category = detailFromQuery.category.trim();
-    }
-    if (detailFromQuery.subcategory) {
-      filter.subcategory = detailFromQuery.subcategory.trim();
-    }
+    try {
+        const detailFromQuery = req.query;
+        console.log(detailFromQuery)
+        console.log(typeof detailFromQuery.category)
+        // if (Object.keys(detailFromQuery).length === 0) {
+        //   res.status(400).send({ status: false, msg: "Please Enter filter" });
+        //   return;
+        // }
+        let loggedIn = req.loggedIn
+        //  if(!detailFromQuery.userId.trim()){
+        //      res.status(400).send({ status: false, msg: "Please Enter user id" });
+        //    return;
+        //  }
+        // if(detailFromQuery.category.trim().length === 0){
+        //     res.status(400).send({ status: false, msg: "Please Enter category" });
+        //   return;
+        // }
+        // if(!detailFromQuery.subcategory.trim()){
+        //     res.status(400).send({ status: false, msg: "Please Enter subcategory" });
+        //   return;
+        // }
+        let filter = {
+            isDeleted: false, userId: loggedIn
+        };
+        if (detailFromQuery.userId) {
+            filter._id = detailFromQuery.userId.trim();
+        }
+        if (detailFromQuery.category) {
+            filter.category = detailFromQuery.category.trim();
+        }
+        if (detailFromQuery.subcategory) {
+            filter.subcategory = detailFromQuery.subcategory.trim();
+        }
 
-    const books = await bookModel
-      .find(filter)
-      .sort({ title: 1 })
-      .select({ ISBN: 0, subcategory: 0, deletedAt: 0, isDeleted: 0 });
-    if (books.length === 0) {
-      res.status(404).send({ status: false, msg: "No book found" });
-      return;
+        const books = await bookModel
+            .find(filter)
+            .sort({ title: 1 })
+            .select({ ISBN: 0, subcategory: 0, deletedAt: 0, isDeleted: 0 });
+        if (books.length === 0) {
+            res.status(404).send({ status: false, msg: "No book found" });
+            return;
+        }
+        res.status(200).send({ status: true, message: "Success", data: books });
+        return;
+    } catch (err) {
+        res.status(500).send({ status: false, msg: err.message });
+        return;
     }
-    res.status(200).send({ status: true, message: "Success", data: books });
-    return;
-  } catch (err) {
-    res.status(500).send({ status: false, msg: err.message });
-    return;
-  }
 };
 
-const getBookById = async (req,res)=>{
-  const bookId = req.params.bookId;
-  console.log(typeof bookId)
-  if(bookId.length===0){ // empty string is falsy
-    return res.status(400).send({status: false, msg: 'Please give bookId'})
-  }
-  if(bookId.trim().length>24){
-    return res.status(400).send({status: false, msg: 'Please give valid bookId'})
-  }
+const getBookById = async (req, res) => {
+    const bookId = req.params.bookId;
+    console.log(typeof bookId)
+    if (bookId.length === 0) { // empty string is falsy
+        return res.status(400).send({ status: false, msg: 'Please give bookId' })
+    }
+    if (bookId.trim().length > 24) {
+        return res.status(400).send({ status: false, msg: 'Please give valid bookId' })
+    }
     const filteredBookId = bookId.trim()
-    const book = await bookModel.findById({_id:filteredBookId});
-    if(!book){
-      return res.status(404).send({status: false, message: 'Book not found'})
+    const book = await bookModel.findById({ _id: filteredBookId });
+    if (!book) {
+        return res.status(404).send({ status: false, message: 'Book not found' })
     }
-   // console.log(book)
-    if(book.reviews === 0){
-      book._doc.reviewsData = []
+    // console.log(book)
+    if (book.reviews === 0) {
+        book._doc.reviewsData = []
     }
-    return res.status(200).send({status: true, message: "Success", data: book})
-  
-  }
-  
+    return res.status(200).send({ status: true, message: "Success", data: book })
+
+}
+
 
 
 /*############################################ UPDATE BOOKS BY BOOK-ID ##########################################################*/
 
 const updateBook = async (req, res) => {
     try {
-      let Id = req.params.bookId
-  
-      if(!ObjectId.isValid(Id)){
-        return res.status(400).send({ status: false, msg: "Book Id is Invalid" })
-    }
+        let Id = req.params.bookId
 
-      let data = req.body
-      let { title, excerpt, releasedAt, ISBN} = data
-  
-      let book = await bookModel.findById(Id)
-      if (!book) {
-        return res.status(404).send({status: false, msg: `User with Id- ${Id} is not present in collection` })
-      }
-      if (book.isDeleted==true) {
-        return res.status(404).send({status: false, msg: 'Document already deleted' })
-      }
+        if (!ObjectId.isValid(Id)) {
+            return res.status(400).send({ status: false, msg: "Book Id is Invalid" })
+        }
 
-      const titleExist = await bookModel.findOne({ title: title })
+        let data = req.body
+        let { title, excerpt, releasedAt, ISBN } = data
+
+        let obj = {}
+        if (data.title) {
+            obj.title = data.title.trim().split(" ").filter(word => word).join(" ")
+        }
+        if (data.excerpt) {
+            obj.excerpt = data.excerpt.trim().split(" ").filter(word => word).join(" ")
+        }
+        if (data.ISBN) {
+            obj.ISBN = data.ISBN.trim().split("-").filter(word => word).join("")
+        }
+        if (data.releasedAt) {
+            obj.releasedAt = data.releasedAt
+        }
+
+        let book = await bookModel.findById(Id)
+        if (!book) {
+            return res.status(404).send({ status: false, msg: `User with Id- ${Id} is not present in collection` })
+        }
+        if (book.isDeleted == true) {
+            return res.status(404).send({ status: false, msg: 'Document already deleted' })
+        }
+
+        const titleExist = await bookModel.findOne({ title: title })
 
         if (titleExist) {
             return res.status(409).send({ status: false, msg: "Title already exits" })
@@ -216,50 +230,48 @@ const updateBook = async (req, res) => {
             return res.status(409).send({ status: false, msg: "ISBN already exits" })
         }
 
-      let updatedBook = await bookModel.findOneAndUpdate(
-        { _id: Id, isDeleted: false },
-        {
-          title: title,
-          excerpt: excerpt,
-          releasedAt: releasedAt,
-          ISBN: ISBN,
-  
-        },
-        { returnDocument: 'after' },
-      )
 
-      return res.status(200).send({ status: true, message:'Success', data: updatedBook })
-    } catch (err) {
-      return res.status(500).send({ status: false, message: err.message })
+        let updatedBook = await bookModel.findOneAndUpdate(
+            { _id: Id, isDeleted: false }, obj,
+            { returnDocument: 'after' },
+        )
+
+        return res.status(200).send({ status: true, message: 'Success', data: updatedBook })
     }
-}  
+    catch (err) {
+        return res.status(500).send({ status: false, message: err.message })
+    }
+}
 
-//------------------------------------delete api----------------------------------------
+/*############################################ DELETE BY BOOK-ID ##########################################################*/
 
-       const deletedbook= async (req,res) =>{
-        try {
+const deletedbook = async (req, res) => {
+    try {
 
-          let bookId=req.params.bookId
-      
-          if(!bookId) {return res.status(400).send({status:false,message:"book id is empty"})}
-           if(!ObjectId.isValid(bookId)){return res.status(400).send({status:false,message:"bookid format invalid"})}
-          
-          let findid=await bookModel.findOne({_id:bookId,isDeleted:false})
-      
-          if(!findid){return res.status(400).send({status:false,message:"this bookid is not found"})}
-         
-           let deletedData=await bookModel.updateOne({_id:bookId},{$set:{isDeleted:true}})
-            res.status(200).send({status:true,massage:"Delete successful"})
-          
+        let bookId = req.params.bookId
 
-          
-        } catch (error) {
-          res.status(500).send({status:false,message:error})
-          
+        if (!bookId) {
+            return res.status(400).send({ status: false, message: "book id is empty" })
         }
-       }
-       
-    
+        if (!ObjectId.isValid(bookId)) {
+            return res.status(400).send({ status: false, message: "bookid format invalid" })
+        }
+
+        let findid = await bookModel.findOne({ _id: bookId, isDeleted: false })
+
+        if (!findid) {
+            return res.status(400).send({ status: false, message: "The requested Book is unavailable" })
+        }
+
+        let deletedData = await bookModel.updateOne({ _id: bookId }, { $set: { isDeleted: true } })
+        return res.status(200).send({ status: true, message: `Delete successful ${deletedData}` })
+
+    } catch (error) {
+        res.status(500).send({ status: false, message: error })
+    }
+}
+
+
 
 
 

@@ -3,7 +3,7 @@ const bookModel = require('../models/bookModel')
 
 let decodedToken
 
-const Authentication = async (req, res, next) => {
+const authentication = async (req, res, next) => {
     try {
         let token = req.headers["x-api-key" || "X-Api-Key"]
         if (!token) return res.status(401).send({ status: false, msg: "No Token Found !!!" })
@@ -19,7 +19,7 @@ const Authentication = async (req, res, next) => {
     }
 }
 
-const Authorisation = async (req,res,next) => {
+const authorisation = async (req,res,next) => {
     try {
         let token = req.headers["x-api-key" || "X-Api-Key"]
         decodedToken = jwt.verify(token, "Room 1")
@@ -38,17 +38,7 @@ const Authorisation = async (req,res,next) => {
         if(decodedToken.userId !== userIdFromBook){
             return res.status(401).send({ status: false, msg: "Unauthorised!!!" });
         }
-        // if (userId) {
-        //     //Request Body
-        //     if (decodedToken.userId !== userId)
-        //         return res.status(401).send({ status: false, msg: "Unauthorised!!!" });
-        // } else if (req.params.bookId) {
-        //     //Path Parameter
-            
-        //     if (decodedToken.userId != userIdFromBook)
-        //         return res.status(401).send({ status: false, msg: "Unauthorised!!!" });
-        // }
-
+        
         next()
     } catch (err) {
         return res.status(500).send({ status: false, msg: err.message })
@@ -56,5 +46,5 @@ const Authorisation = async (req,res,next) => {
 }
 
 
-module.exports.Authentication = Authentication
-module.exports.Authorisation = Authorisation
+module.exports.authentication = authentication
+module.exports.authorisation = authorisation
