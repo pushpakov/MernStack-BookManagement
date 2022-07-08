@@ -3,8 +3,8 @@
 const bookModel = require('../models/bookModel')
 const userModel = require('../models/userModel')
 const ObjectId = require('mongoose').Types.ObjectId
-const isbn = require('isbn-validate')
-const { checksum } = require('isbn-validation')
+const isbn = require('isbn-validate')                     // to validate 10 digit isbn  
+const {checksum}  = require('isbn-validation')              // to validate 13 digit isbn
 
 
 let createBookDocument = async (req, res) => {
@@ -14,7 +14,7 @@ let createBookDocument = async (req, res) => {
         let {
             title,
             excerpt,
-            userId,
+            userId,                 
             ISBN,
             category,
             subcategory,
@@ -31,7 +31,6 @@ let createBookDocument = async (req, res) => {
         obj.userId = data.userId
         obj.ISBN = data.ISBN.trim().split("-").filter(word => word).join("")
         obj.reviews = data.reviews
-        obj.deletedAt = data.deletedAt  //Date.now():null
         obj.isDeleted = data.isDeleted
         obj.releasedAt = data.releasedAt
 
@@ -273,7 +272,7 @@ const deletedbook = async (req, res) => {
             return res.status(400).send({ status: false, message: "The requested Book is unavailable" })
         }
 
-        let deletedData = await bookModel.updateOne({ _id: bookId }, { $set: { isDeleted: true } })
+        let deletedData = await bookModel.updateOne({ _id: bookId }, { $set: { isDeleted: true , deletedAt: Date.now()} })
         return res.status(200).send({ status: true, message: `Delete successful ${deletedData}` })
 
     } catch (error) {
