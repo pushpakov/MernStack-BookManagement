@@ -1,30 +1,19 @@
 const express = require("express");
 const router = express.Router();
+const { userRegistration, userLogin } = require('../controllers/userController')
+const { createBookDocument, getBook, getBookById, updateBook, deletedbook } = require('../controllers/bookController')
+const { authentication, authorisation } = require('../middlewares/auth')
 
-const {userRegistration,
-       userLogin
-} = require('../controllers/userController')
+//These Are the APIs:-
 
-const {createBookDocument,
-       getBook,
-       updateBook,
-       deletedbook,
-       getBookById
-} = require('../controllers/bookController') 
-
-const {Authentication,
-       Authorisation
-} = require('../middlewares/auth')
-
-//Theses Are the APIs//
-
-router.post("/register",  userRegistration)
-router.post("/books", Authentication, Authorisation, createBookDocument)
+router.post("/register", userRegistration)
 router.post("/login", userLogin)
-router.get("/books",Authentication, getBook)
-router.get("/books/:bookId", Authentication, Authorisation, getBookById)
-router.put("/books/:bookId", Authentication,Authorisation, updateBook)
-router.delete("/books/:bookId", Authentication, Authorisation, deletedbook)
+router.post("/books", authentication, authorisation, createBookDocument)
+router.get("/books", authentication, getBook)
+router.get("/books/:bookId", authentication, getBookById)
+router.put("/books/:bookId", authentication, authorisation, updateBook)
+router.delete("/books/:bookId", authentication, authorisation, deletedbook)
+
 
 
 
