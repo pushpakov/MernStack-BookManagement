@@ -89,6 +89,8 @@ const userRegistration = async (req, res) => {
   }
 };
 
+//----------------------------------userlogIn api---------------------------------------->
+
 const userLogin = async (req, res) => {
   const { email, password } = req.body;
   if (Object.keys(req.body).length == 0)

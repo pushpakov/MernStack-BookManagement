@@ -159,9 +159,11 @@ const getBook = async (req, res) => {
   }
 };
 
+///-------------------------------get book id --------------------------------------
+
 const getBookById = async (req,res)=>{
   const bookId = req.params.bookId;
-  console.log(typeof bookId)
+  // console.log(typeof bookId)
   if(bookId.length===0){ // empty string is falsy
     return res.status(400).send({status: false, msg: 'Please give bookId'})
   }
