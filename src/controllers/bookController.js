@@ -28,7 +28,7 @@ let createBookDocument = async (req, res) => {
         obj.category = data.category.trim().split(" ").filter(word=>word).join(" ")
         obj.subcategory = data.subcategory
         obj.userId = data.userId
-        obj.ISBN = data.ISBN.trim().split(" ").filter(word=>word).join("")
+        obj.ISBN = data.ISBN.trim().split("-").filter(word=>word).join("")
         obj.reviews = data.reviews
         obj.deletedAt = data.deletedAt  //Date.now():null
         obj.isDeleted = data.isDeleted
@@ -140,9 +140,9 @@ const getBook = async (req, res) => {
       filter.category = detailFromQuery.category.trim();
     }
     if (detailFromQuery.subcategory) {
-      filter.subcategory = detailFromQuery.subcategory.trim();
+      let subCategoryArr = detailFromQuery.subcategory.trim(',').map(el=>el.trim());
+      filter.subcategory = {$in: subCategoryArr}
     }
-
     const books = await bookModel
       .find(filter)
       .sort({ title: 1 })
@@ -169,7 +169,7 @@ const getBookById = async (req,res)=>{
     return res.status(400).send({status: false, msg: 'Please give valid bookId'})
   }
     const filteredBookId = bookId.trim()
-    const book = await bookModel.findById({_id:filteredBookId});
+    const book = await bookModel.findOne({_id:filteredBookId,isDeleted: false});
     if(!book){
       return res.status(404).send({status: false, message: 'Book not found'})
     }
@@ -213,7 +213,7 @@ const updateBook = async (req, res) => {
         const isbnExist = await bookModel.findOne({ ISBN: ISBN })
 
         if (isbnExist) {
-            return res.status(409).send({ status: false, msg: "ISBN already exits" })
+            return res.status(409).send({ status: false, msg: "ISBN already exist" })
         }
 
       let updatedBook = await bookModel.findOneAndUpdate(
@@ -246,7 +246,7 @@ const updateBook = async (req, res) => {
           
           let findid=await bookModel.findOne({_id:bookId,isDeleted:false})
       
-          if(!findid){return res.status(400).send({status:false,message:"this bookid is not found"})}
+          if(!findid){return res.status(404).send({status:false,message:"this bookid is not found"})}
          
            let deletedData=await bookModel.updateOne({_id:bookId},{$set:{isDeleted:true}})
             res.status(200).send({status:true,massage:"Delete successful"})

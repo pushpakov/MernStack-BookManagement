@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken')
 const bookModel = require('../models/bookModel')
 
-let decodedToken
+let decodedToken;
 
 const Authentication = async (req, res, next) => {
     try {

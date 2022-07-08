@@ -95,9 +95,10 @@ const userLogin = async (req, res) => {
     res
       .status(400)
       .send({ status: false, message: "Enter Login Credentials." });
-  if (!email) res.status(400).send({ status: false, msg: "Enter email." });
+  if (!email) 
+  return res.status(400).send({ status: false, msg: "Enter email." });
   if (!password)
-    res.status(400).send({ status: false, msg: "Enter password." });
+    return res.status(400).send({ status: false, msg: "Enter password." });
 
   const validateEmail = function (mail) {
     if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(mail)) {
@@ -133,13 +134,13 @@ const userLogin = async (req, res) => {
     {
       userId: user._id,
       iat: Math.floor(Date.now() / 1000),
-      exp: Math.floor(Date.now() / 1000) + 30 * 60,
+     // exp: Math.floor(Date.now() / 1000) + 30 * 60,
     },
     "Room 1"
   );
   return res
     .status(201)
-    .send({ status: true, msg: "login Successfully", token: token });
+    .send({ status: true, msg: "You are loggedin Successfully", token: token });
 };
 
 module.exports.userRegistration = userRegistration;
