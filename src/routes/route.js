@@ -9,12 +9,12 @@ const { authentication, authorisation } = require('../middlewares/auth')
 router.post("/register", userRegistration)
 router.post("/login", userLogin)
 router.post("/books", authentication, authorisation, createBookDocument)
-router.get("/books", authentication, getBook)
+router.get("/books", getBook)
 router.get("/books/:bookId", authentication, getBookById)
 router.put("/books/:bookId", authentication, authorisation, updateBook)
 router.delete("/books/:bookId", authentication, authorisation, deletedbook)
 
 
 
-module.exports = router;
 
+module.exports = router;

@@ -1,20 +1,18 @@
 const userModel = require("../models/userModel");
 const jwt = require("jsonwebtoken");
 
+
+
+//<--------------------Registering User-------------------------->//
+
 const userRegistration = async (req, res) => {
     try {
         let userData = req.body
+        let {city, pincode} = userData.address
 
         ///<--------------req validation-------------------------------------------->
         if (Object.keys(userData).length == 0)
             return res.status(400).send({ status: false, msg: " data is empty" });
-        ///<----------------------------body tag checking ---------------------------------->
-        // if(!userData.title)return res.status(400).send({status:false,msg:"title is required"})
-        // if(!userData.name)return res.status(400).send({status:false,msg:"name is required"})
-        // if(!userData.phone)return res.status(400).send({status:false,msg:"phone is required"})
-        // if(!userData.email)return res.status(400).send({status:false,msg:"email is required"})
-        // if(!userData.password)return res.status(400).send({status:false,msg:"password is required"})
-        // if(!userData.address)return res.status(400).send({status:false,msg:"address is required"})
 
         ///<------------------------- req.body key empty validation ------------------------>
         const isValid = function (value) {
@@ -76,28 +74,46 @@ const userRegistration = async (req, res) => {
                 return true;
             }
         };
-        if (!validatePassword(password))
+        if (!validatePassword(userData.password))
             return res
                 .status(400)
                 .send({ status: false, msg: "this password format is incorrect" });
+
+        ////<----------------------- Address validation ------------------------------->
+
+        if (!(/^[A-Za-z]+$/.test(city))){
+          return res
+          .status(400)
+          .send({ status: false, msg: "Please use Alphabets in City."  });
+
+        }
+
+        if (!(/^[0-6]{6}$/.test(pincode))){
+          return res
+          .status(400)
+          .send({ status: false, msg: "Please use 6 Digit Numbers in Pincode."});
+
+        }
 
         ///<-----------------------------created part ---------------------------------->
         const userCreated = await userModel.create(userData);
         return res.status(201).send({ status: true, userdata: userCreated });
     } catch (error) {
-        return res.status(500).send({ status: false, msg: error.massenge });
+        return res.status(500).send({ status: false, msg: error.message });
     }
 };
 
+//<------------------User Logging in------------------------------>//
 const userLogin = async (req, res) => {
-    const { email, password } = req.body;
-    if (Object.keys(req.body).length == 0)
-        res
-            .status(400)
-            .send({ status: false, message: "Enter Login Credentials." });
-    if (!email) res.status(400).send({ status: false, msg: "Enter email." });
-    if (!password)
-        res.status(400).send({ status: false, msg: "Enter password." });
+  const { email, password } = req.body;
+  if (Object.keys(req.body).length == 0)
+    res
+      .status(400)
+      .send({ status: false, message: "Enter Login Credentials." });
+  if (!email) 
+  return res.status(400).send({ status: false, msg: "Enter email." });
+  if (!password)
+    return res.status(400).send({ status: false, msg: "Enter password." });
 
     const validateEmail = function (mail) {
         if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(mail)) {
@@ -128,17 +144,18 @@ const userLogin = async (req, res) => {
             msg: "Email or the password is not correct",
         });
 
-    let token = jwt.sign(
-        {
-            userId: user._id,
-            iat: Math.floor(Date.now() / 1000),
-            exp: Math.floor(Date.now() / 1000) + 30 * 60,
-        },
-        "Room 1"
-    );
-    return res
-        .status(201)
-        .send({ status: true, msg: "login Successfully", token: token });
+  console.log(user);
+  let token = jwt.sign(
+    {
+      userId: user._id,
+      iat: Math.floor(Date.now() / 1000),
+     // exp: Math.floor(Date.now() / 1000) + 30 * 60,
+    },
+    "Room 1"
+  );
+  return res
+    .status(201)
+    .send({ status: true, msg: "You are loggedin Successfully", token: token });
 };
 
 module.exports.userRegistration = userRegistration;
