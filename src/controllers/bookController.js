@@ -3,7 +3,7 @@
 const bookModel = require('../models/bookModel')
 const userModel = require('../models/userModel')
 const ObjectId = require('mongoose').Types.ObjectId
-const isbn = require("isbn-validate")
+//const isbn = require("isbn-validate")
 
 
 let createBookDocument = async (req, res) => {
@@ -21,19 +21,7 @@ let createBookDocument = async (req, res) => {
 
         } = data
         
-        let obj = {}
-
-        obj.title = data.title.trim().split(" ").filter(word=>word).join(" ")
-        obj.excerpt = data.excerpt.trim().split(" ").filter(word=>word).join(" ")
-        obj.category = data.category.trim().split(" ").filter(word=>word).join(" ")
-        obj.subcategory = data.subcategory
-        obj.userId = data.userId
-        obj.ISBN = data.ISBN.trim().split(" ").filter(word=>word).join("")
-        obj.reviews = data.reviews
-        obj.deletedAt = data.deletedAt  //Date.now():null
-        obj.isDeleted = data.isDeleted
-        obj.releasedAt = data.releasedAt
-        
+        let obj = {}          
 
         
         if (Object.keys(data).length == 0) {
@@ -93,6 +81,18 @@ let createBookDocument = async (req, res) => {
         if (!validId) {
             return res.status(400).send({ status: false, msg: 'userId is not Valid Id' })
         }
+
+        
+        obj.title = data.title.trim().split(" ").filter(word=>word).join(" ")
+        obj.excerpt = data.excerpt.trim().split(" ").filter(word=>word).join(" ")
+        obj.category = data.category.trim().split(" ").filter(word=>word).join(" ")
+        obj.subcategory = data.subcategory
+        obj.userId = data.userId
+        obj.ISBN = data.ISBN.trim().split(" ").filter(word=>word).join("")
+        obj.reviews = data.reviews
+        obj.deletedAt = data.deletedAt  //Date.now():null
+        obj.isDeleted = data.isDeleted
+        obj.releasedAt = data.releasedAt
 
         let savedData = await bookModel.create(obj)
         return res.status(201).send({ status: true, data: savedData })
@@ -161,7 +161,6 @@ const getBook = async (req, res) => {
 
 const getBookById = async (req,res)=>{
   const bookId = req.params.bookId;
-  console.log(typeof bookId)
   if(bookId.length===0){ // empty string is falsy
     return res.status(400).send({status: false, msg: 'Please give bookId'})
   }
@@ -236,7 +235,7 @@ const updateBook = async (req, res) => {
 
 //------------------------------------delete api----------------------------------------
 
-       const deletedbook= async (req,res) =>{
+const deletedbook= async (req,res) =>{
         try {
 
           let bookId=req.params.bookId
@@ -257,8 +256,8 @@ const updateBook = async (req, res) => {
           res.status(500).send({status:false,message:error})
           
         }
-       }
-       
+ }
+     
     
 
 

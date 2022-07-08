@@ -6,6 +6,7 @@ let decodedToken
 const Authentication = async (req, res, next) => {
     try {
         let token = req.headers["x-api-key" || "X-Api-Key"]
+        console.log(token.length)
         if (!token) return res.status(401).send({ status: false, msg: "No Token Found !!!" })
 
         decodedToken = jwt.verify(token, "Room 1")

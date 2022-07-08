@@ -1,27 +1,29 @@
 const userModel = require("../models/userModel");
 const jwt = require("jsonwebtoken");
 
+
+const isValid = function (value) {
+    if (typeof value === "undefined" || value === null) return false;
+    if (typeof value === "string" && value.trim().length === 0) return false;
+    return true;
+  };
+
+//<--------------------Registering User-------------------------->//
+
 const userRegistration = async (req, res) => {
   try {
     let userData = req.body;
 
+    let {name, phone, address} = req.body
+    let {street, city, pincode} = address
+    //console.log(pincode)
+
     ///<--------------req validation-------------------------------------------->
     if (Object.keys(userData).length == 0)
-      return res.status(400).send({ status: false, msg: " data is empty" });
-    ///<----------------------------body tag checking ---------------------------------->
-    // if(!userData.title)return res.status(400).send({status:false,msg:"title is required"})
-    // if(!userData.name)return res.status(400).send({status:false,msg:"name is required"})
-    // if(!userData.phone)return res.status(400).send({status:false,msg:"phone is required"})
-    // if(!userData.email)return res.status(400).send({status:false,msg:"email is required"})
-    // if(!userData.password)return res.status(400).send({status:false,msg:"password is required"})
-    // if(!userData.address)return res.status(400).send({status:false,msg:"address is required"})
+      return res.status(400).send({ status: false, msg: " data is empty" })
 
     ///<------------------------- req.body key empty validation ------------------------>
-    const isValid = function (value) {
-      if (typeof value === "undefined" || value === null) return false;
-      if (typeof value === "string" && value.trim().length === 0) return false;
-      return true;
-    };
+  
     if (!isValid(userData.title))
       return res.status(400).send({ status: false, msg: "title is required" });
     if (!isValid(userData.name))
@@ -39,6 +41,18 @@ const userRegistration = async (req, res) => {
         .status(400)
         .send({ status: false, msg: "address is required" });
 
+    ////<----------------------- title enum validation ------------------------------->
+    let enu = ["Mr", "Mrs", "Miss"];
+    if (!enu.includes(userData.title))
+      return res
+        .status(400)
+        .send({ status: false, msg: `please provide one of them + ${enu}` });
+
+     ////<----------------------- name validation ------------------------------->
+     if(!(/^[A-Z a-z]+$/.test(name))){
+        return res.status(400).send({status:false, message: "Use Alphabets in Name !!"})
+     }
+
     ///<------------------------ Email validation ---------------------------------------->
 
     const validateEmail = function (mail) {
@@ -54,41 +68,62 @@ const userRegistration = async (req, res) => {
     if (emailChecking)
       return res
         .status(400)
-        .send({ status: false, msg: "this Email is already exist ?" });
+        .send({ status: false, msg: "this Email already exist !!" });
 
     ///<-----------------------------mobile number checking ---------------------------->
+    if(!(/^[6-9]\d{10}$/.test(phone))){
+        return res
+        .status(400)
+        .send({ status: false, msg: "Phone Number Should be start with (6-9) !!" });
+    }
     let phoneNumChecking = await userModel.findOne({ phone: userData.phone });
     if (phoneNumChecking) {
       return res
         .status(400)
-        .send({ status: false, msg: "this phone number is already exist ?" });
+        .send({ status: false, msg: "this phone number is already exist !!" });
     }
 
-    ////<----------------------- title enum validation ------------------------------->
-    let enu = ["Mr", "Mrs", "Miss"];
-    if (!enu.includes(userData.title))
-      return res
-        .status(400)
-        .send({ status: false, msg: `please provide one of them + ${enu}` });
     ////<----------------------- Password validation ------------------------------->
     const validatePassword = function (password) {
       if (/^[A-Za-z\W0-9]{8,15}$/.test(password)) {
         return true;
       }
     };
-    if (!validatePassword(password))
+    if (!validatePassword(userData.password))
       return res
         .status(400)
         .send({ status: false, msg: "this password format is incorrect" });
 
+    ////<----------------------- Address validation ------------------------------->
+    
+    if(!(/^[A-Za-z0-9]+$/.test(street))){
+      return res
+      .status(400)
+      .send({ status: false, msg: "Street Should contain Alphaneumeric Only !!!" });
+  }
+
+
+    if(!(/^[A-Za-z]+$/.test(city))){
+        return res
+        .status(400)
+        .send({ status: false, msg: "City Should be Alphabet !!!" });
+    }
+
+
+    if(!(/^[0-9]{6}$/.test(pincode))){
+        return res
+        .status(400)
+        .send({ status: false, msg: "Pincode Should be 6-Digit Number !!!" });
+    }
     ///<-----------------------------created part ---------------------------------->
     const userCreated = await userModel.create(userData);
     return res.status(201).send({ status: true, userdata: userCreated });
   } catch (error) {
-    return res.status(500).send({ status: false, msg: error.massenge });
+    return res.status(500).send({ status: false, msg: error.message });
   }
 };
 
+//<------------------User Logging in------------------------------>//
 const userLogin = async (req, res) => {
   const { email, password } = req.body;
   if (Object.keys(req.body).length == 0)

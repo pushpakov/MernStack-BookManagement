@@ -6,39 +6,26 @@ const {userRegistration,
 } = require('../controllers/userController')
 
 const {createBookDocument,
-<<<<<<< HEAD
-       getBook,getBookById,
-       updateBook} = require('../controllers/bookController') 
-=======
        getBook,
-       updateBook,deletedbook
-       
+       updateBook,
+       deletedbook,
+       getBookById
 } = require('../controllers/bookController') 
->>>>>>> f6fa823a09b86abb9a95577397b6cbf79070ae4b
 
 const {Authentication,
        Authorisation
 } = require('../middlewares/auth')
 
-//This Are the APIs//
+//Theses Are the APIs//
 
 router.post("/register",  userRegistration)
-<<<<<<< HEAD
+router.post("/books", Authentication, Authorisation, createBookDocument)
 router.post("/login", userLogin)
-router.post("/books", Authentication,Authorisation, createBookDocument)
 router.get("/books",Authentication, getBook)
-router.get("/books/:bookId", Authentication, getBookById)
+router.get("/books/:bookId", Authentication, Authorisation, getBookById)
 router.put("/books/:bookId", Authentication,Authorisation, updateBook)
+router.delete("/books/:bookId", Authentication, Authorisation, deletedbook)
 
-=======
-router.post("/books",  createBookDocument)
-router.post("/login", userLogin)
-router.put("/books/:bookId", Authenticate, updateBook)
-router.get("/books",Authenticate, getBook)
-router.delete("/books/:bookId",deletedbook)
-//router.get("/books/:bookId", Authenticate, getBookById)
->>>>>>> f6fa823a09b86abb9a95577397b6cbf79070ae4b
 
 
 module.exports = router;
-
