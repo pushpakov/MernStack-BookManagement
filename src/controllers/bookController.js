@@ -21,21 +21,6 @@ let createBookDocument = async (req, res) => {
 
         } = data
 
-        let obj = {}
-
-        obj.title = data.title.trim().split(" ").filter(word => word).join(" ")
-        obj.excerpt = data.excerpt.trim().split(" ").filter(word => word).join(" ")
-        obj.category = data.category.trim().split(" ").filter(word => word).join(" ")
-        obj.subcategory = data.subcategory
-        obj.userId = data.userId
-        obj.ISBN = data.ISBN.trim().split("-").filter(word => word).join("")
-        obj.reviews = data.reviews
-        obj.deletedAt = data.deletedAt  //Date.now():null
-        obj.isDeleted = data.isDeleted
-        obj.releasedAt = data.releasedAt
-
-
-
         if (Object.keys(data).length == 0) {
             return res.status(400).send({ status: false, msg: "Please provide necessary Book Details" })
         }
@@ -75,6 +60,20 @@ let createBookDocument = async (req, res) => {
         if (!releasedAt) {
             return res.status(400).send({ status: false, msg: "releasedAt is required" })
         }
+
+        let obj = {}
+
+        obj.title = data.title.trim().split(" ").filter(word => word).join(" ")
+        obj.excerpt = data.excerpt.trim().split(" ").filter(word => word).join(" ")
+        obj.category = data.category.trim().split(" ").filter(word => word).join(" ")
+        obj.subcategory = data.subcategory
+        obj.userId = data.userId
+        obj.ISBN = data.ISBN.trim().split("-").filter(word => word).join("")
+        obj.reviews = data.reviews
+        obj.deletedAt = data.deletedAt  //Date.now():null
+        obj.isDeleted = data.isDeleted
+        obj.releasedAt = data.releasedAt
+
 
         const titleExist = await bookModel.findOne({ title: obj.title })
 
@@ -264,7 +263,7 @@ const deletedbook = async (req, res) => {
         }
 
         let deletedData = await bookModel.updateOne({ _id: bookId }, { $set: { isDeleted: true } })
-        return res.status(200).send({ status: true, message: `Delete successful ${deletedData}` })
+            return res.status(200).send({ status: true, message: `Delete successful ${deletedData}` })
 
     } catch (error) {
         res.status(500).send({ status: false, message: error })
