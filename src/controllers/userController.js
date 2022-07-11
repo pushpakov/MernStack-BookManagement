@@ -86,7 +86,7 @@ const userRegistration = async (req, res) => {
         if (!validatePassword(userData.password))
             return res
                 .status(400)
-                .send({ status: false, msg: "this password format is incorrect" });
+                .send({ status: false, msg: " password should be 8-15 characters " });
 
         ////<----------------------- Address validation ------------------------------->
 
