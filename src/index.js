@@ -7,6 +7,7 @@ const app = express();
 app.use(bodyParser.json());
 
 
+
 mongoose
 .connect(
     "mongodb+srv://pushpak:pushpak1819@radoncluster.opqe2.mongodb.net/group1Database?retryWrites=true&w=majority",
@@ -15,7 +16,7 @@ mongoose
     }
   )
   .then(() => console.log("MongoDb is connected"))
-  .catch((err) => console.log(err));
+  .catch( err => console.log(err));
 
 app.use("/", route);
 

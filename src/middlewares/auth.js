@@ -3,12 +3,13 @@ const bookModel = require("../models/bookModel");
 const mongoose = require("mongoose");
 const ObjectId = mongoose.Types.ObjectId;
 let decodedToken;
+let token;
 
 const authentication = async (req, res, next) => {
   try {
-    let token = req.headers["x-api-key" || "X-Api-Key"];
+    token = req.headers["x-api-key" || "X-Api-Key"];
     if (!token) {
-      return res.status(401).send({ status: false, msg: "No Token Found !!!" });
+      return res.status(401).send({ status: false, message: "No Token Found !!!" });
     }
 
     decodedToken = jwt.verify(token, "Room 1");
@@ -18,6 +19,7 @@ const authentication = async (req, res, next) => {
         .status(401)
         .send({ status: false, message: "Token is invalid !!!" });
     }
+    req.loggedIn = decodedToken.userId
     next();
   } catch (err) {
     return res.status(500).send({ status: false, message: err.message });
@@ -26,36 +28,51 @@ const authentication = async (req, res, next) => {
 
 const authorisation = async (req, res, next) => {
   try {
-    let token = req.headers["x-api-key" || "X-Api-Key"];
+
     decodedToken = jwt.verify(token, "Room 1");
-    let userId = req.body.userId;
-    let bookId = req.params.bookId;
-    let userIdFromBook;
-    
-    if (bookId) {
-      if (!ObjectId.isValid(bookId)) {
-        return res
-          .status(400)
-          .send({ status: false, message: "Please provide valid book id" });
-      }
-      let user = await bookModel.findOne({ _id: bookId, isDeleted: false });
-      console.log(user);
-      if (!user) {
-        return res
-          .status(404)
-          .send({ status: false, message: "No Book found" });
-      }
-      userIdFromBook = user.userId.toString();
-    } else {
-       if(!userId || userId === 'undefined' || userId.trim().length===0){
-      return res.status(400).send({status: false, message: 'Please enter userId'})
+    if(req.body.userId){
+      //Request Body
+      if(decodedToken.userId == req.body.userId) return next()
+      else return res.status(401).send({ status: false, msg: "This UserId is Unauthorised!!!" });
+   }else if(req.params.bookId){
+      //Path Parameter
+      let requiredId = await bookModel.findOne({_id: req.params.bookId}).select({userId:1, _id:0})
+      let userIdFromBook = requiredId.userId.toString()
+      if(decodedToken.userId == userIdFromBook) return next()
+      else return res.status(401).send({ status: false, msg: " This UserId is Unauthorised!!!" });
      }
-      userIdFromBook = userId;
-    }
-    if (decodedToken.userId !== userIdFromBook) {
-      return res.status(403).send({ status: false, msg: "You have no permission to create ,update or delete other user's book!!!" });
-    }
-    next();
+     req.loggedIn = decodedToken.userId
+     return next()
+
+
+    
+    // let userId = req.body.userId;
+    // let bookId = req.params.bookId;
+    // let userIdFromBook;
+    
+    // if (bookId) {
+    //   if (!ObjectId.isValid(bookId)) {
+    //     return res
+    //       .status(400)
+    //       .send({ status: false, message: "Please Provide Valid Book ID" });
+    //   }
+    //   let user = await bookModel.findOne({ _id: bookId, isDeleted: false });
+    //   if (!user) {
+    //     return res
+    //       .status(404)
+    //       .send({ status: false, message: "No Book found" });
+    //   }
+    //   userIdFromBook = user.userId.toString();
+    // } else {
+    //    if(!userId || userId === 'undefined' || userId.trim().length===0){
+    //   return res.status(400).send({status: false, message: 'Please enter userId'})
+    //  }
+    //   userIdFromBook = userId;
+    // }
+    // if (decodedToken.userId !== userIdFromBook) {
+    //   return res.status(403).send({ status: false, message: "This User is Unauthorised to Create, Update and Delete a Book!!!" });
+    // }
+    // next();
   } catch (err) {
     return res.status(500).send({ status: false, message: err.message });
   }
