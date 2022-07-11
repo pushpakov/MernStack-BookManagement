@@ -1,11 +1,11 @@
-/*############################################ POST BOOKS ##########################################################*/
-
 const bookModel = require('../models/bookModel')
 const userModel = require('../models/userModel')
 const ObjectId = require('mongoose').Types.ObjectId
 const isbn = require('isbn-validate')                     // to validate 10 digit isbn  
 const {checksum}  = require('isbn-validation')              // to validate 13 digit isbn
 
+
+/*############################################ POST BOOKS ##########################################################*/
 
 let createBookDocument = async (req, res) => {
     try {
@@ -22,28 +22,17 @@ let createBookDocument = async (req, res) => {
 
         } = data
 
-        let obj = {}
-
-        obj.title = data.title.trim().split(" ").filter(word => word).join(" ")
-        obj.excerpt = data.excerpt.trim().split(" ").filter(word => word).join(" ")
-        obj.category = data.category.trim().split("-").filter(word => word).join(" ")
-        obj.subcategory = data.subcategory
-        obj.userId = data.userId
-        obj.ISBN = data.ISBN.trim().split("-").filter(word => word).join("")
-        obj.reviews = data.reviews
-        obj.isDeleted = data.isDeleted
-        obj.releasedAt = data.releasedAt
-
-
         if (Object.keys(data).length == 0) {
             return res.status(400).send({ status: false, msg: "Please provide necessary Book Details" })
         }
 
-        if (!title) {
+
+        
+        if (!title || !title.match(/^[a-zA-Z0-9]/g)) {
             return res.status(400).send({ status: false, msg: "Title is required" })
         }
 
-        if (!excerpt) {
+        if (!excerpt || !excerpt.match(/^[a-zA-Z0-9]/g)) {
             return res.status(400).send({ status: false, msg: "Excerpt is required" })
         }
 
@@ -55,7 +44,7 @@ let createBookDocument = async (req, res) => {
             return res.status(400).send({ status: false, msg: "User Id is Invalid" })
         }
 
-        if (!category) {
+        if (!category || !category.match(/^[a-zA-Z0-9]/g)) {
             return res.status(400).send({ status: false, msg: "Category is required" })
         }
 
@@ -63,18 +52,30 @@ let createBookDocument = async (req, res) => {
             return res.status(400).send({ status: false, msg: "ISBN is required" })
         }
 
+        if (!subcategory || !subcategory.match(/^[a-zA-Z0-9]/g)) {
+            return res.status(400).send({ status: false, msg: "Subcategory is required" })
+        }
+
+        if (!releasedAt || !releasedAt.match(/^(\d{4})-(0[1-9]|1[0-2])-(0[1-9]|1\d|2\d|3[01])$/)) {
+            return res.status(400).send({ status: false, msg: "releasedAt is required in the format('YYYY-MM-DD)" })
+        }
+
+        let obj = {}
+
+        obj.title = data.title.trim().split(" ").filter(word => word).join(" ")
+        obj.excerpt = data.excerpt.trim().split(" ").filter(word => word).join(" ")
+        obj.category = data.category.trim().split(" ").filter(word => word).join(" ")
+        obj.subcategory = data.subcategory
+        obj.userId = data.userId
+        obj.ISBN = data.ISBN.trim().split("-").filter(word => word).join("")
+        obj.reviews = data.reviews
+        obj.isDeleted = data.isDeleted
+        obj.releasedAt = data.releasedAt
+
         if (!isbn.Validate(obj.ISBN)) {
             if (!checksum(obj.ISBN)) {
                 return res.status(400).send({ status: false, msg: "ISBN is Invalid" })
             }
-        }
-
-        if (!subcategory) {
-            return res.status(400).send({ status: false, msg: "Subcategory is required" })
-        }
-
-        if (!releasedAt) {
-            return res.status(400).send({ status: false, msg: "releasedAt is required" })
         }
 
 
@@ -96,18 +97,6 @@ let createBookDocument = async (req, res) => {
             return res.status(400).send({ status: false, msg: 'userId is not Valid Id' })
         }
 
-        
-        obj.title = data.title.trim().split(" ").filter(word=>word).join(" ")
-        obj.excerpt = data.excerpt.trim().split(" ").filter(word=>word).join(" ")
-        obj.category = data.category.trim().split(" ").filter(word=>word).join(" ")
-        obj.subcategory = data.subcategory
-        obj.userId = data.userId
-        obj.ISBN = data.ISBN.trim().split(" ").filter(word=>word).join("")
-        obj.reviews = data.reviews
-        obj.deletedAt = data.deletedAt  //Date.now():null
-        obj.isDeleted = data.isDeleted
-        obj.releasedAt = data.releasedAt
-
         let savedData = await bookModel.create(obj)
         return res.status(201).send({ status: true, data: savedData })
 
@@ -118,6 +107,7 @@ let createBookDocument = async (req, res) => {
 
     }
 }
+
 
 
 /*############################################ GET BOOK ##########################################################*/
@@ -211,14 +201,25 @@ const updateBook = async (req, res) => {
 
         let obj = {}
 
-        if (data.title) {
+        if (title) {
+            
+            if (!title.match(/^[a-zA-Z0-9]/g)) {
+                return res.status(404).send({ status: false, msg: "Please do provide appropriate Title" })
+            }
             obj.title = data.title.trim().split(" ").filter(word => word).join(" ")
         }
-        if (data.excerpt) {
+
+        
+        if (excerpt) {
+            if (!excerpt.match(/^[a-zA-Z0-9]/g)) {
+                return res.status(404).send({ status: false, msg: "Please do provide appropriate Excerpt" })
+            }
             obj.excerpt = data.excerpt.trim().split(" ").filter(word => word).join(" ")
         }
-        if (data.ISBN) {
-            obj.ISBN = data.ISBN.trim().split("-").filter(word => word).join("")
+
+
+        if (ISBN) {
+            obj.ISBN = ISBN.trim().split("-").filter(word => word).join("")
             if (!isbn.Validate(obj.ISBN)) {
                 if (!checksum(obj.ISBN)) {
                     return res.status(400).send({ status: false, msg: "ISBN is Invalid" })
@@ -226,7 +227,10 @@ const updateBook = async (req, res) => {
             }
         }
 
-        if (data.releasedAt) {
+        if (releasedAt) {
+            if (!releasedAt.match(/^(\d{4})-(0[1-9]|1[0-2])-(0[1-9]|1\d|2\d|3[01])$/)) {
+                return res.status(400).send({ status: false, msg: "releasedAt is required in the format('YYYY-MM-DD)" })
+            }
             obj.releasedAt = data.releasedAt
         }
 
@@ -284,7 +288,7 @@ const deletedbook = async (req, res) => {
         }
 
         let deletedData = await bookModel.updateOne({ _id: bookId }, { $set: { isDeleted: true , deletedAt: Date.now()} })
-        return res.status(200).send({ status: true, message: `Delete successful ${deletedData}` })
+        return res.status(200).send({ status: true, message: `Delete successful for Book Id :${bookId}` })
 
     } catch (error) {
         res.status(500).send({ status: false, message: error })
