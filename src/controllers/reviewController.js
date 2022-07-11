@@ -40,6 +40,39 @@ const createReviewForBook = async (req, res) => {
 };
 
 
+const updateReview = async (req, res) => {
+  try{
+
+    let {review, rating , reviewedBy } = req.body
+    let {bookId, reviewId} = req.params
+    if(Object.keys(req.body) == 0) 
+        return res.status(400).send({ status: false, message: "Requst Body Cannot be Empty" })
+
+    let book = await bookModel.findOne({ _id: bookId, isDeleted: false })
+    if(!book)  return res.status(404).send({ status: true, message: "Book Does Not Found !!!" })
+
+    let reviewExist = await reviewModel.findOne({_id: reviewId, isDeleted : false})
+    if(!reviewExist ) return res.status(404).send({ status: true, message: "Review Does Not Found !!!" })
+    
+    
+    
+    let updatedReview={}
+    if(review) updatedReview.review = review
+    if(rating) updatedReview.rating = rating
+    if(reviewedBy) updatedReview.reviewedBy = reviewedBy
+
+    let result = await reviewModel.findByIdAndUpdate(
+      {_id: reviewId },
+        updatedReview
+    )
+
+      res.status(200).send({status: false, data: result})
+
+  }catch(err){
+    res.status(500).send({ status: false, message: err.message });
+  }
+}
+
 /*############################################ DELETE REVIEWS BY BOOK-ID AND REVIEW ID ##########################################################*/
 
 const deleteReview = async (req, res) => {
@@ -73,4 +106,5 @@ const deleteReview = async (req, res) => {
 }
 
 module.exports.createReviewForBook = createReviewForBook;
+module.exports.updateReview = updateReview;
 module.exports.deleteReview = deleteReview;
