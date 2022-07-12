@@ -128,35 +128,48 @@ let createBookDocument = async (req, res) => {
 
 const getBook = async (req, res) => {
   try {
-    const {userId, category, subcategory} = req.query;
+    const detailFromQuery = req.query;
+ 
     let loggedIn = req.loggedIn
+     
     let filter = {
-      isDeleted: false, userId: loggedIn
+      userId: loggedIn, isDeleted: false,
     };
-    if (userId) {
-      if(!ObjectId.isValid(userId.trim())) return res.status(400).send({ status: false, message : "Enter Valid User Id!!"})
-      filter._id = userId;
+    if (detailFromQuery.userId) {
+        if(detailFromQuery.userId.trim().length === 0){
+            res.status(400).send({ status: false, msg: "Please Enter user id" });
+          return;
+        }
+      filter._id = detailFromQuery.userId.trim();
     }
-    if (category) {
-      filter.category = category.trim();
+    if (detailFromQuery.category) {
+        if(detailFromQuery.category.trim().length === 0){
+            res.status(400).send({ status: false, msg: "Please Enter category" });
+          return;
+        }
+      filter.category = detailFromQuery.category.trim();
     }
-    if (subcategory) {
-      filter.subcategory = subcategory.trim();
+    if (detailFromQuery.subcategory) {
+        if(detailFromQuery.subcategory.trim().length === 0){
+            res.status(400).send({ status: false, msg: "Please Enter subcategory" });
+          return;
+        }
+      let subCategoryArr = detailFromQuery.subcategory
+        .split(",")
+        .map((el) => el.trim());
+      filter.subcategory = { $in: subCategoryArr };
     }
-
-    const book = await bookModel
-      .findOne(filter)
+    const books = await bookModel
+      .find(filter)
       .sort({ title: 1 })
       .select({ ISBN: 0, subcategory: 0, deletedAt: 0, isDeleted: 0 });
-
-    if(!book) return res.status(404).send({ status: false, message: 'Book Does Not Found' })
-
-    let reviews = await reviewModel.find({ bookId: book._id, isDeleted: false })
-    if (book.reviews == 0) book._doc["reviewsData"] = [] ;
-    else  book._doc["reviewsData"] = reviews;
-
-    return res.status(200).send({ status: true, message: "Success", data: book });
-
+    if (books.length === 0) {
+      res.status(404).send({ status: false, msg: "No book found" });
+      return;
+    }
+    return res
+      .status(200)
+      .send({ status: true, message: "Success", data: books });
   } catch (err) {
     return res.status(500).send({ status: false, message: err.message });
   }
@@ -172,7 +185,8 @@ const getBookById = async (req, res) => {
     return res.status(404).send({ status: false, message: 'Book not found' })
   }
 
-  let reviews = await reviewModel.find({ bookId: book._id, isDeleted: false })
+  let reviews = await reviewModel.find({ bookId: book._id, isDeleted: false }).select({isDeleted: 0, createdAt: 0, updatedAt: 0, __v: 0})
+
   if (book.reviews === 0)  book._doc.reviewsData = [];
   else book._doc.reviewsData = reviews
   return res.status(200).send({ status: true, message: "Success", data: book })
