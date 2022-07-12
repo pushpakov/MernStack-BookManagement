@@ -15,7 +15,7 @@ const createReviewForBook = async (req, res) => {
   try {
     const bookId = req.params.bookId;
     const reviewDetail = req.body;
-    
+
     let reviewObj = {};
     let { reviewedBy, rating, review } = reviewDetail;
     if (!ObjectId.isValid(bookId)) {
@@ -88,21 +88,22 @@ const createReviewForBook = async (req, res) => {
 
     reviewObj.bookId = bookId;
     const newReview = await reviewModel.create(reviewObj);
-   
+
     if (newReview.review) {
       const updateBookDetails = await bookModel.findOneAndUpdate(
         { _id: bookId },
         { $inc: { reviews: 1 } },
         { new: true }
       )
-      let output = {}
-      output.bookId = reviewDetail.bookId,
-      output.reviewedBy = reviewDetail.reviewedBy,
-      output.reviewedAt = reviewDetail.reviewedAt,
-      output.rating = reviewDetail.rating,
-      output.review = reviewDetail.review
-    
-      updateBookDetails._doc.reviewsData = output
+      let reviewOutput = {
+        bookId : reviewDetail.bookId,
+        reviewedBy : reviewDetail.reviewedBy,
+        reviewedAt : reviewDetail.reviewedAt,
+        rating : reviewDetail.rating,
+        review : reviewDetail.review
+      }
+
+      updateBookDetails._doc.reviewsData = reviewOutput
 
       return res
         .status(200)
@@ -185,14 +186,15 @@ const updateReview = async (req, res) => {
       { new: true },
     )
 
-    let output = {}
-      output.bookId = result.bookId,
-      output.reviewedBy = result.reviewedBy,
-      output.reviewedAt = result.reviewedAt,
-      output.rating = result.rating,
-      output.review = result.review
-    
-      book._doc.reviewsData = output
+    let output = {
+      bookId: result.bookId,
+      reviewedBy: result.reviewedBy,
+      reviewedAt: result.reviewedAt,
+      rating: result.rating,
+      review: result.review
+    }
+
+    book._doc.reviewsData = output
 
     res.status(200).send({ status: true, message: "Success", data: book })
 
