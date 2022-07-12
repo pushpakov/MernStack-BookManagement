@@ -95,8 +95,14 @@ const createReviewForBook = async (req, res) => {
         { $inc: { reviews: 1 } },
         { new: true }
       )
+      let output = {}
+      output.bookId = reviewDetail.bookId,
+      output.reviewedBy = reviewDetail.reviewedBy,
+      output.reviewedAt = reviewDetail.reviewedAt,
+      output.rating = reviewDetail.rating,
+      output.review = reviewDetail.review
     
-      updateBookDetails._doc.reviewsData = newReview
+      updateBookDetails._doc.reviewsData = output
 
       return res
         .status(200)
@@ -179,7 +185,14 @@ const updateReview = async (req, res) => {
       { new: true },
     )
 
-    book._doc.reviewsData = result
+    let output = {}
+      output.bookId = result.bookId,
+      output.reviewedBy = result.reviewedBy,
+      output.reviewedAt = result.reviewedAt,
+      output.rating = result.rating,
+      output.review = result.review
+    
+      book._doc.reviewsData = output
 
     res.status(200).send({ status: true, message: "Success", data: book })
 
