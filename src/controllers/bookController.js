@@ -22,24 +22,31 @@ let createBookDocument = async (req, res) => {
 
     if (Object.keys(bookDeatils).length == 0) {
       return res
-        .status(400)
-        .send({ status: false, message: "Please Provide Necessary Book Details" });
+      .status(400)
+      .send({ status: false, message: "Please Provide Necessary Book Details" });
     }
-
+    
     if (!isValid(title)) {
       return res.status(400).send({ status: false, message: "Title is required" });
     }
-
+    
     obj.title = title
-      .trim()
-      .split(" ")
-      .filter((word) => word)
-      .join(" ");
-
+    .trim()
+    .split(" ")
+    .filter((word) => word)
+    .join(" ");
+    
+    const titleExist = await bookModel.findOne({ title: obj.title });
+    if (titleExist) {
+      return res
+        .status(409)
+        .send({ status: false, message: "Title already exists" });
+    }
+    
     if (!isValid(excerpt)) {
       return res
-        .status(400)
-        .send({ status: false, message: "Excerpt is required" });
+      .status(400)
+      .send({ status: false, message: "Excerpt is required" });
     }
     obj.excerpt = excerpt
       .trim()
@@ -47,7 +54,7 @@ let createBookDocument = async (req, res) => {
       .filter((word) => word)
       .join(" ");
 
-    if (!userId) {
+      if (!userId) {
       return res
         .status(400)
         .send({ status: false, message: "User Id is required" });
@@ -71,26 +78,28 @@ let createBookDocument = async (req, res) => {
     if (!isValid(ISBN)) {
       return res.status(400).send({ status: false, message: "ISBN is required" });
     }
-    // if(!isbn.Validate(ISBN) || !checksum(ISBN)){
-    //     return res.status(400).send({status: false, message: "Please enter valid ISBN"})
-    // }
+
     obj.ISBN = ISBN.trim()
-      .split(" ")
+      .split("-")
       .filter((word) => word)
       .join("");
+    
+      if (!isbn.Validate(obj.ISBN)) {
+        if (!checksum(obj.ISBN)) {
+          return res
+            .status(400)
+            .send({ status: false, messasge: "ISBN is Invalid" });
+        }
+      }
+      
     if (!isValid(subcategory)) {
       return res
         .status(400)
         .send({ status: false, message: "Subcategory is required" });
     }
+
     obj.subcategory = subcategory;
 
-    const titleExist = await bookModel.findOne({ title: obj.title });
-    if (titleExist) {
-      return res
-        .status(409)
-        .send({ status: false, message: "Title already exists" });
-    }
 
     const isIsbnExist = await bookModel.findOne({ ISBN: obj.ISBN });
     if (isIsbnExist) {
@@ -252,37 +261,23 @@ const updateBook = async (req, res) => {
         .split("-")
         .filter((word) => word)
         .join("");
-      if (ISBN.length == 10) {
-        if (!isbn.Validate(trimmedISBN)) {
-          return res
-            .status(400)
-            .send({ status: false, message: "ISBN is Invalid" });
-        }
-      }
-      if (ISBN.length == 13) {
-        if (!checksum(trimmedISBN)) {
-          return res
-            .status(400)
-            .send({ status: false, message: "ISBN is Invalid" });
-        }
-        const isIsbnExist = await bookModel.findOne({ ISBN: trimmedISBN });
 
-        if (isIsbnExist) {
-          return res.status(409).send({ status: false, message: "ISBN already exists" });
+        if (!isbn.Validate(trimmedISBN)) {
+          if (!checksum(trimmedISBN)) {
+            return res
+              .status(400)
+              .send({ status: false, messasge: "ISBN is Invalid" });
+          }
         }
-        bookObject.ISBN = trimmedISBN;
-      }
+        
+        const isIsbnExist = await bookModel.findOne({ ISBN: trimmedISBN });
+        if (isIsbnExist) {
+              return res.status(409).send({ status: false, message: "ISBN already exists" });
+       }
+       bookObject.ISBN = trimmedISBN;
+
     }
 
-
-
-    // if (!isbn.Validate(ISBN)) {
-    //   if (!checksum(bookObject.ISBN)) {
-    //     return res
-    //       .status(400)
-    //       .send({ status: false, message: "ISBN is Invalid" });
-    //   }
-    // }
     if (!(/((\d{4}[\/-])(\d{2}[\/-])(\d{2}))/.test(releasedAt.trim()))) {
       return res
         .status(400)

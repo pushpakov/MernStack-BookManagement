@@ -23,8 +23,12 @@ const userRegistration = async (req, res) => {
         
         if (!isValid(userData.title))
             return res.status(400).send({ status: false, message: "title is required" });
-        if (!isValid(userData.name))
+        if (!isValid(userData.name)){ 
             return res.status(400).send({ status: false, message: "name is required" });
+        }
+        if(!(/^[A-Za-z ]+$/.test(userData.name))){
+            return res.status(400).send({ status: false, message: "name should be in alphabetic character" });
+        }
         if (!isValid(userData.phone))
             return res.status(400).send({ status: false, message: "phone is required" });
         if (!isValid(userData.email))
@@ -43,7 +47,7 @@ const userRegistration = async (req, res) => {
         if (!enu.includes(userData.title))
             return res
                 .status(400)
-                .send({ status: false, message: `Please Enter one of these ${enu}` });
+                .send({ status: false, message: "Please Enter Title as 'Mr' or 'Mrs' or 'Miss'",  });
 
 
         ///<-----------------------------mobile number checking ---------------------------->
@@ -108,7 +112,7 @@ const userRegistration = async (req, res) => {
 
         ///<-----------------------------created part ---------------------------------->
         const userCreated = await userModel.create(userData);
-        return res.status(201).send({ status: true, userdata: userCreated });
+        return res.status(201).send({ status: true,  message: 'Success', data: userCreated });
     } catch (error) {
         return res.status(500).send({ status: false, message: error.message });
     }
@@ -123,8 +127,8 @@ const userLogin = async (req, res) => {
             .status(400)
             .send({ status: false, message: "Enter Login Credentials." });
 
-    if (!email) return res.status(400).send({ status: false, msg: "Email Required." });
-    if (!password) return res.status(400).send({ status: false, msg: "Password Required." });
+    if (!isValid(email)) return res.status(400).send({ status: false, msg: "Email Required." })
+    if (!isValid(password)) return res.status(400).send({ status: false, msg: "Password Required." });
 
     const validateEmail = function (mail) {
         if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(mail)) {
@@ -146,7 +150,7 @@ const userLogin = async (req, res) => {
     if (!validatePassword(password))
         return res
             .status(400)
-            .send({ status: false, message: "Password Should be 8-15 Characters" });
+            .send({ status: false, message: "Incorrect Password !!!" });
 
     let user = await userModel
         .findOne({ email: email, password: password })
