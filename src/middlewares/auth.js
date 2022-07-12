@@ -55,7 +55,7 @@ const authorisation = async (req, res, next) => {
     if (decodedToken.userId !== userIdFromBook) {
       return res.status(403).send({ status: false, message: "This User is Unauthorised to Create, Update and Delete a Book!!!" });
     }
-    req.loggedIn = userIduserIdFromBook
+    req.loggedIn = userIdFromBook
     next();
   } catch (err) {
     return res.status(500).send({ status: false, message: err.message });
