@@ -161,10 +161,6 @@ const updateReview = async (req, res) => {
         .send({ status: false, message: "Requst Body Cannot be Empty" })
     }
 
-    if (!reviewedBy) {
-      reviewedBy = "Guest";
-    }
-
     if (!isValid(reviewedBy)) {
       return res
         .status(400)
