@@ -2,8 +2,11 @@ const jwt = require("jsonwebtoken");
 const bookModel = require("../models/bookModel");
 const mongoose = require("mongoose");
 const ObjectId = mongoose.Types.ObjectId;
+
 let decodedToken;
 let token;
+
+/*############################################ AUTHENTICATION ##########################################################*/
 
 const authentication = async (req, res, next) => {
   try {
@@ -25,6 +28,9 @@ const authentication = async (req, res, next) => {
     return res.status(500).send({ status: false, message: err.message });
   }
 };
+
+
+/*############################################ AUTHORISATION ##########################################################*/
 
 const authorisation = async (req, res, next) => {
   try {

@@ -195,9 +195,9 @@ const getBookById = async (req, res) => {
   try {
     const bookId = req.params.bookId;
 
-      if (!ObjectId.isValid(bookId)) {
-        return res.status(400).send({ status: false, message: "BookId is Invalid" });
-      }
+    if (!ObjectId.isValid(bookId)) {
+      return res.status(400).send({ status: false, message: "BookId is Invalid" });
+    }
 
     const filteredBookId = bookId
     const book = await bookModel.findOne({ _id: filteredBookId, isDeleted: false });
