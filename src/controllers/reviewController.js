@@ -25,6 +25,7 @@ const createReviewForBook = async (req, res) => {
     } else {
       reviewDetail.bookId = bookId;
       const newReview = await reviewModel.create(reviewDetail);
+
       if (newReview.review) {
         const updateBookDetails = await bookModel.findOneAndUpdate(
           { _id: bookId },
@@ -74,6 +75,8 @@ const updateReview = async (req, res) => {
         .send({ status: true, message: "Book Does Not Found !!!" })
     }
 
+
+
     let reviewExist = await reviewModel.findOne({ _id: reviewId, bookId: bookId, isDeleted: false })
 
     if (!reviewExist) {
@@ -91,10 +94,11 @@ const updateReview = async (req, res) => {
 
     let result = await reviewModel.findByIdAndUpdate(
       { _id: reviewId },
-      updatedReview
+      updatedReview,
+      { returnDocument: 'after' }
     )
 
-    book._doc.reviewData = [result]
+    book._doc.reviewsData = result
 
     res.status(200).send({ status: true, message: "Success", data: book })
 
