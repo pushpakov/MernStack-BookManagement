@@ -15,7 +15,6 @@ const createReviewForBook = async (req, res) => {
   try {
     const bookId = req.params.bookId;
     const reviewDetail = req.body;
-
     let reviewObj = {};
     let { reviewedBy, rating, review } = reviewDetail;
     if (!ObjectId.isValid(bookId)) {
@@ -48,6 +47,12 @@ const createReviewForBook = async (req, res) => {
       .filter((word) => word)
       .join(" ");
 
+    if(rating === 0 ) {
+      return res
+        .status(400)
+        .send({ status: false, message: "Please enter rating between 1 to 5" });
+    }
+
     if (!rating || !isValid(rating)) {
       return res
         .status(400)
@@ -58,10 +63,10 @@ const createReviewForBook = async (req, res) => {
         .status(400)
         .send({ status: false, message: "Please enter valid rating" });
     }
-    if (rating < 0 || rating > 5) {
+    if (rating < 1 || rating > 5) {
       return res
         .status(400)
-        .send({ status: false, message: "Please enter rating between 0 to 5" });
+        .send({ status: false, message: "Please enter rating between 1 to 5" });
     }
     reviewObj.rating = rating;
 
@@ -94,19 +99,18 @@ const createReviewForBook = async (req, res) => {
         { _id: bookId },
         { $inc: { reviews: 1 } },
         { new: true }
-      )
-      let reviewOutput = {
-        bookId : reviewDetail.bookId,
-        reviewedBy : reviewDetail.reviewedBy,
-        reviewedAt : new Date().toISOString(),
-        rating : reviewDetail.rating,
-        review : reviewDetail.review
-      }
-
-      updateBookDetails._doc.reviewsData = reviewOutput
+      );
+      let reviewDetail = {
+        bookId: newReview.bookId,
+        reviewedBy: newReview.reviewedBy,
+        reviewedAt: newReview.reviewedAt,
+        rating: newReview.rating,
+        review: newReview.review,
+      };
+      updateBookDetails._doc.reviewsData = reviewDetail;
 
       return res
-        .status(200)
+        .status(201)
         .send({ status: true, message: "Success", data: updateBookDetails });
     }
   } catch (err) {
@@ -154,7 +158,7 @@ const updateReview = async (req, res) => {
         .send({ status: false, message: "Please enter valid reviewer name" });
     }
 
-    if (rating < 0 || rating > 5) {
+    if (rating < 1 || rating > 5) {
       return res
         .status(400)
         .send({ status: false, message: "Please enter rating between 0 to 5" });
@@ -222,7 +226,7 @@ const deleteReview = async (req, res) => {
 
     let review = await reviewModel.findOneAndUpdate(
       { _id: reviewId, bookId: bookId, isDeleted: false },
-      { $set: { isDeleted: true } }
+      { $set: { isDeleted: true }}
     )
 
     if (!review) return res.status(404).send({ status: true, message: "Review Does Not Found !!!" })

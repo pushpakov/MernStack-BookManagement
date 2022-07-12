@@ -22,6 +22,9 @@ router.post("/books/:bookId/review", createReviewForBook)
 router.put("/books/:bookId/review/:reviewId", updateReview)
 router.delete("/books/:bookId/review/:reviewId", deleteReview)
 
+router.all("/*", function (req, res){
+    res.status(404).send({status :false, message: "URL not found."})
+})
 
 
 module.exports = router;
