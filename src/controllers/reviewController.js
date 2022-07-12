@@ -98,7 +98,7 @@ const createReviewForBook = async (req, res) => {
       let reviewOutput = {
         bookId : reviewDetail.bookId,
         reviewedBy : reviewDetail.reviewedBy,
-        reviewedAt : reviewDetail.reviewedAt,
+        reviewedAt : new Date().toISOString(),
         rating : reviewDetail.rating,
         review : reviewDetail.review
       }
@@ -189,7 +189,7 @@ const updateReview = async (req, res) => {
     let output = {
       bookId: result.bookId,
       reviewedBy: result.reviewedBy,
-      reviewedAt: result.reviewedAt,
+      reviewedAt: new Date().toISOString(),
       rating: result.rating,
       review: result.review
     }
