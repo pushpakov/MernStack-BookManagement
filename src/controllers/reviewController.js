@@ -74,7 +74,7 @@ const updateReview = async (req, res) => {
         .send({ status: true, message: "Book Does Not Found !!!" })
     }
 
-    let reviewExist = await reviewModel.findOne({ _id: reviewId, isDeleted: false })
+    let reviewExist = await reviewModel.findOne({ _id: reviewId, bookId: bookId, isDeleted: false })
 
     if (!reviewExist) {
       return res
@@ -94,7 +94,9 @@ const updateReview = async (req, res) => {
       updatedReview
     )
 
-    res.status(200).send({ status: false, data: result })
+    book._doc.reviewData = [result]
+
+    res.status(200).send({ status: true, message: "Success", data: book })
 
   } catch (err) {
     res.status(500).send({ status: false, message: err.message });
