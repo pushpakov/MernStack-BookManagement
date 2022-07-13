@@ -23,9 +23,11 @@ const authentication = async (req, res, next) => {
         .send({ status: false, message: "Token is invalid !!!" });
     }
     req.loggedIn = decodedToken.userId
+
+   
     next();
   } catch (err) {
-    return res.status(500).send({ status: false, message: err.message });
+    return res.status(401).send({ status: false, message: err.message });
   }
 };
 

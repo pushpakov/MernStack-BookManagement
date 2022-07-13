@@ -293,7 +293,14 @@ const updateBook = async (req, res) => {
 
     if (Object.keys(bookDetailToUpdate).indexOf("releasedAt") !== -1) {
       
-    if (!(/((\d{4}[\/-])(\d{2}[\/-])(\d{2}))/.test(releasedAt)) || !(releasedAt instanceof Date)) {
+      if (!(releasedAt)) {
+     
+        return res
+          .status(400)
+          .send({ status: false, message: "Enter Date in YYYY-MM-DD format!!!" });
+      }
+      
+    if (!(/((\d{4}[\/-])(\d{2}[\/-])(\d{2}))/.test(releasedAt))) {
      
       return res
         .status(400)

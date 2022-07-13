@@ -195,7 +195,7 @@ const userLogin = async (req, res) => {
         {
             userId: user._id,
             iat: Math.floor(Date.now() / 1000),
-            exp: Math.floor((Date.now() / 1000) + 180 * 60),
+            exp: Math.floor((Date.now() / 1000) + 5 * 10),
         },
         "Room 1"
     )
