@@ -155,7 +155,7 @@ const getBook = async (req, res) => {
         res.status(400).send({ status: false, msg: "Please Enter user id" });
         return;
       }
-      filter._id = detailFromQuery.userId.trim();
+      filter.userId = detailFromQuery.userId.trim();
     }
     if (detailFromQuery.category) {
       if (detailFromQuery.category.trim().length === 0) {
