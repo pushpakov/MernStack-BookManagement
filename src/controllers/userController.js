@@ -185,9 +185,9 @@ const userLogin = async (req, res) => {
         .select({ _id: 1 })
 
     if (!user) {
-        return res.status(400).send({
+        return res.status(401).send({
             status: false,
-            message: "Incorrect Email or Password !!!",
+            message: "Authentication failed!!!, Incorrect Email or Password !!!",
         })
     }
 
