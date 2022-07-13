@@ -241,11 +241,12 @@ const updateBook = async (req, res) => {
       if (title.trim().length === 0) {
         return res.status(400).send({ status: false, message: 'Please Enter title' })
       }
+     
       let trimmedTitle = title
         .trim()
         .split(" ")
         .filter((word) => word)
-        .join(" ");
+        .join(" ")
       const isTitleExist = await bookModel.findOne({ title: trimmedTitle });
       if (isTitleExist) {
         return res
@@ -254,6 +255,7 @@ const updateBook = async (req, res) => {
       }
       bookObject.title = trimmedTitle;
     }
+  
     if (Object.keys(bookDetailToUpdate).indexOf('excerpt') !== -1) {
       if (excerpt.length == 0) {
         return res.status(400).send({ status: false, message: 'Please Enter excerpt' })
@@ -289,12 +291,18 @@ const updateBook = async (req, res) => {
 
     }
 
-    if (!(/((\d{4}[\/-])(\d{2}[\/-])(\d{2}))/.test(releasedAt.trim()))) {
+    if (Object.keys(bookDetailToUpdate).indexOf("releasedAt") !== -1) {
+      
+    if (!(/((\d{4}[\/-])(\d{2}[\/-])(\d{2}))/.test(releasedAt)) || !(releasedAt instanceof Date)) {
+     
       return res
         .status(400)
         .send({ status: false, message: "Enter Date in YYYY-MM-DD format!!!" });
     }
-    bookObject.releasedAt = releasedAt;
+  
+    bookObject.releasedAt = releasedAt
+  }
+
 
 
     let book = await bookModel.findOne({ _id: bookId, isDeleted: false });

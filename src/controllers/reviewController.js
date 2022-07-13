@@ -116,6 +116,7 @@ const createReviewForBook = async (req, res) => {
       )
 
       let reviewDetail = {
+        _id: newReview._id,
         bookId: newReview.bookId,
         reviewedBy: newReview.reviewedBy,
         reviewedAt: newReview.reviewedAt,
@@ -205,6 +206,7 @@ const updateReview = async (req, res) => {
     )
 
     let output = {
+      _id: result._id,
       bookId: result.bookId,
       reviewedBy: result.reviewedBy,
       reviewedAt: new Date().toISOString(),
