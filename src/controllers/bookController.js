@@ -111,7 +111,7 @@ let createBookDocument = async (req, res) => {
         .status(400)
         .send({ status: false, message: "releasedAt is required" });
     }
-    if (!(/((\d{4}[\/-])(\d{2}[\/-])(\d{2}))/.test(releasedAt))) {
+    if (!(/^((\d{4}[\/-])(\d{2}[\/-])(\d{2}))$/.test(releasedAt))) {
       return res
         .status(400)
         .send({ status: false, message: "Enter Release Date in YYYY-MM-DD format!!!" });
@@ -300,7 +300,7 @@ const updateBook = async (req, res) => {
           .send({ status: false, message: "Enter Date in YYYY-MM-DD format!!!" });
       }
       
-    if (!(/((\d{4}[\/-])(\d{2}[\/-])(\d{2}))/.test(releasedAt))) {
+    if (!(/^((\d{4}[\/-])(\d{2}[\/-])(\d{2}))$/.test(releasedAt))) {
      
       return res
         .status(400)
