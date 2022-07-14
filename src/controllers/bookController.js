@@ -1,9 +1,8 @@
-/*############################################ POST BOOKS ##########################################################*/
-
 const bookModel = require('../models/bookModel')
 const userModel = require('../models/userModel')
 const reviewModel = require('../models/reviewModel')
 const ObjectId = require('mongoose').Types.ObjectId
+const upload = require('../.aws/config')
 const isbn = require('isbn-validate')                     // to validate 10 digit isbn  
 const { checksum } = require('isbn-validation')              // to validate 13 digit isbn
 
@@ -13,10 +12,13 @@ const isValid = function (value) {
   return true;
 };
 
+/*############################################ POST BOOKS ##########################################################*/
 
 let createBookDocument = async (req, res) => {
   try {
     let bookDeatils = req.body;
+    let files = req.files;
+    let uploadedFileURL;
     let { title, excerpt, userId, ISBN, category, subcategory, releasedAt } = bookDeatils;
     let obj = {};
 
@@ -111,7 +113,7 @@ let createBookDocument = async (req, res) => {
         .status(400)
         .send({ status: false, message: "releasedAt is required" });
     }
-    if (!(/^((\d{4}[\/-])(\d{2}[\/-])(\d{2}))$/.test(releasedAt))) {
+    if (!(/((\d{4}[\/-])(\d{2}[\/-])(\d{2}))/.test(releasedAt))) {
       return res
         .status(400)
         .send({ status: false, message: "Enter Release Date in YYYY-MM-DD format!!!" });
@@ -125,12 +127,17 @@ let createBookDocument = async (req, res) => {
         .status(400)
         .send({ status: false, message: "userId is not Valid Id" });
     }
+    if(files && files.length>0){
+       uploadedFileURL = await upload.uploadFile(files[0]);
+    }
+    obj['bookCover'] = uploadedFileURL
     let savedData = await bookModel.create(obj);
     return res.status(201).send({ status: true, message: 'Success', data: savedData });
   } catch (err) {
     return res.status(500).send({ status: false, message: err.message });
   }
 };
+
 
 
 /*############################################ GET BOOK ##########################################################*/
@@ -355,7 +362,7 @@ const deletedbook = async (req, res) => {
     let findid = await bookModel.findOne({ _id: bookId, isDeleted: false })
 
     if (!findid) {
-      return res.status(400).send({ status: false, message: "The Requested Book is Unavailable" })
+      return res.status(404).send({ status: false, message: "The Requested Book is Unavailable" })
     }
 
     let deletedData = await bookModel.findOneAndUpdate({ _id: bookId }, { $set: { isDeleted: true, deletedAt: Date.now() } })
@@ -365,8 +372,6 @@ const deletedbook = async (req, res) => {
     res.status(500).send({ status: false, message: error })
   }
 }
-
-
 
 
 

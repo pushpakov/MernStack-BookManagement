@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { userRegistration, userLogin } = require('../controllers/userController')
-const { createBookDocument, getBook, getBookById, updateBook, deletedbook } = require('../controllers/bookController')
+const { createBookDocument, createBookCover, getBook, getBookById, updateBook, deletedbook } = require('../controllers/bookController')
 const { authentication, authorisation } = require('../middlewares/auth');
 const { createReviewForBook, updateReview, deleteReview } = require("../controllers/reviewController");
 
