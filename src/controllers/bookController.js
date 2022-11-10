@@ -146,10 +146,8 @@ const getBook = async (req, res) => {
   try {
     const detailFromQuery = req.query;
 
-    let loggedIn = req.loggedIn
-
     let filter = {
-      userId: loggedIn, isDeleted: false,
+      isDeleted: false,
     };
     if (detailFromQuery.userId) {
       if (!ObjectId.isValid(detailFromQuery.userId)) {
@@ -184,7 +182,8 @@ const getBook = async (req, res) => {
     const books = await bookModel
       .find(filter)
       .sort({ title: 1 })
-      .select({ ISBN: 0, subcategory: 0, deletedAt: 0, isDeleted: 0 });
+      .select({deletedAt: 0, isDeleted: 0 });
+
     if (books.length === 0) {
       res.status(404).send({ status: false, msg: "No book found" });
       return;
@@ -196,6 +195,26 @@ const getBook = async (req, res) => {
     return res.status(500).send({ status: false, message: err.message });
   }
 };
+
+
+
+
+
+const getBookByUserId = async (req, res) => {
+  try{
+  const userId = req.params.userId
+  const book = await bookModel.find({ userId: userId, isDeleted: false }).populate("userId");
+  console.log(book)
+  if(!book){
+    return res.status(404).send({ status: false, message: 'Book not found' })
+  }
+  return res.status(200).send({ status: true, message: "Success", data: book })
+  }
+  catch (err) {
+    return res.status(500).send({ status: false, message: err.message });
+  }
+}
+
 
 
 const getBookById = async (req, res) => {
@@ -381,3 +400,4 @@ module.exports.getBook = getBook;
 module.exports.getBookById = getBookById;
 module.exports.updateBook = updateBook;
 module.exports.deletedbook = deletedbook;
+module.exports.getBookByUserId = getBookByUserId;

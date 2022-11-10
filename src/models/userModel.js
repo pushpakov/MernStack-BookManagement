@@ -26,11 +26,18 @@ const userSchema = mongoose.Schema({
         minLength: 8,
         maxLength: 15
     },
-    address: {
-        street: String,
-        city:  String,
-        pincode: String
-    }
+    
+        street:{
+            type: String
+        } ,
+
+        city:{
+            type: String
+        } ,
+        pincode: {
+            type: Number
+        }
+    
 },{timestamps: true});
 
 

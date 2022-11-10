@@ -21,7 +21,7 @@ const userRegistration = async (req, res) => {
             return res.status(400).send({ status: false, msg: "Request Cannot Be Empty" })
         }
 
-        let { city, pincode } = userData.address
+        let { street, city, pincode } = userData
 
         if (!isValid(userData.title)) {
             return res.status(400).send({ status: false, message: "title is required" })
@@ -49,11 +49,11 @@ const userRegistration = async (req, res) => {
                 .send({ status: false, message: "password is required" })
         }
 
-        if (!isValid(userData.address)) {
-            return res
-                .status(400)
-                .send({ status: false, message: "address is required" })
-        }
+        // if (!isValid(userData.address)) {
+        //     return res
+        //         .status(400)
+        //         .send({ status: false, message: "address is required" })
+        // }
 
         ////<----------------------- title enum validation ------------------------------->
         let enu = ["Mr", "Mrs", "Miss"];
@@ -116,14 +116,15 @@ const userRegistration = async (req, res) => {
         }
 
         ////<----------------------- Address validation ------------------------------->
-
+        console.log(city,street , pincode)
         if (!(/^[A-Za-z]+$/.test(city))) {
             return res
                 .status(400)
                 .send({ status: false, message: "Please use Alphabets in City." });
         }
+        
 
-        if (!(/^[0-9]{6}$/.test(pincode))) {
+        if (!(/^[0-9]{6}$/.test(pincode))) { 
             return res
                 .status(400)
                 .send({ status: false, message: "Please use 6 Digit Numbers in Pincode." });
@@ -195,13 +196,17 @@ const userLogin = async (req, res) => {
         {
             userId: user._id,
             iat: Math.floor(Date.now() / 1000),
-            exp: Math.floor((Date.now() / 1000) + 180 * 60),
+            exp: Math.floor((Date.now() / 1000) + 180 * 60),  
         },
         "Room 1"
     )
+    let data = {
+        "token":token,
+        "userId":user._id.toString()
+    }
     return res
         .status(200)
-        .send({ status: true, message: "Login Successfully", token: token });
+        .send({ status: true, message: "Login Successfully", data1: data });
 };
 
 module.exports.userRegistration = userRegistration;

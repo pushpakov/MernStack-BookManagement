@@ -10,24 +10,23 @@ let token;
 
 const authentication = async (req, res, next) => {
   try {
-    token = req.headers["x-api-key" || "X-Api-Key"];
+    token = req.header("Authorization");
     if (!token) {
       return res.status(401).send({ status: false, message: "No Token Found !!!" });
     }
 
     decodedToken = jwt.verify(token, "Room 1");
-
     if (!decodedToken) {
       return res
         .status(401)
         .send({ status: false, message: "Token is invalid !!!" });
     }
     req.loggedIn = decodedToken.userId
-
+    
    
     next();
   } catch (err) {
-    return res.status(401).send({ status: false, message: err.message });
+    return res.status(401).send({ status: false, message: err.message ,token});
   }
 };
 

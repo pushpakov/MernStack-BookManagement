@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { userRegistration, userLogin } = require('../controllers/userController')
-const { createBookDocument, createBookCover, getBook, getBookById, updateBook, deletedbook } = require('../controllers/bookController')
+const { createBookDocument, createBookCover, getBookByUserId, getBook, getBookById, updateBook, deletedbook } = require('../controllers/bookController')
 const { authentication, authorisation } = require('../middlewares/auth');
 const { createReviewForBook, updateReview, deleteReview } = require("../controllers/reviewController");
 
@@ -13,6 +13,7 @@ router.post("/login", userLogin)
 //Book APIs
 router.post("/books", authentication, authorisation, createBookDocument)
 router.get("/books",authentication, getBook)
+router.get("/book/:userId",authentication, getBookByUserId)
 router.get("/books/:bookId", authentication, getBookById)
 router.put("/books/:bookId", authentication, authorisation, updateBook)
 router.delete("/books/:bookId", authentication, authorisation, deletedbook)
